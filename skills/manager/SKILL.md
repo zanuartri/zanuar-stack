@@ -39,6 +39,8 @@ Read the existing ticket and `runs` rows for this repo before acting. Match acti
 
 ## 1. Write tickets
 
+If the owner talks to you directly (no orchestrator), run the **interview** skill on any feature or non-trivial request before writing tickets. If an orchestrator started you, never ask the owner directly: look facts up in the code and send decisions to the orchestrator.
+
 A worker knows only its ticket, so every decision goes there, not in chat.
 
 ```
