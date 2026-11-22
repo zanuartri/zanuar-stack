@@ -48,7 +48,7 @@ Start the repos that land first first. Later repos can plan in parallel when the
 
 When a manager writes:
 - Answer anything the story, contract, order or code already settles. Decide, and state your pick in one line.
-- When a provider repo lands, tell the managers waiting on it.
+- Cross-repo order lives in `tickets.depends_on`. When a provider ticket reaches `review`, send its branch and head commit (`git -C <provider> rev-parse <branch>`) to the manager of every ticket that depends on it, without waiting to be asked. Include the provider path so its reviewer can check shared fixtures.
 - Escalate to the owner only: contract or merge-order changes, scope changes, anything irreversible (merging, pushing to main, deleting branches or data), spending, and genuine uncertainty. Batch them into one question with a recommended option.
 - The owner can talk to a manager directly. That overrides you; update your plan.
 

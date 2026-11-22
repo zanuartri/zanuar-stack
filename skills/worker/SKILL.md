@@ -16,6 +16,9 @@ Skills named here are zanuar-stack's (`orchestrator`, `manager`, `worker`, `revi
 
 ## Work
 - Plan briefly, then make small, focused commits with clear messages.
+- Keep the repo's line endings (check `.gitattributes` and `git config core.autocrlf`); never normalise files you touch.
+- On big repos, search with `git grep <pattern> -- <paths>` scoped to the area instead of a whole-tree grep that times out.
+- Db queries: `python <setup-zanuar-stack dir>/tq.py sql "<SQL>" [params...]`. On Windows, if `python -c` quoting breaks, write a `.py` file in your scratch dir and run it.
 - Stay in scope. If the right fix needs more, ask first: "scope: need X because Y, ok?"
 - Stuck on a choice? Ask with options and a default ("A or B? going with A unless told otherwise") and keep doing whatever doesn't depend on it.
 - A message from the manager overrides your plan.

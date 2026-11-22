@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS stories (
 
 CREATE TABLE IF NOT EXISTS tickets (
   id         INTEGER PRIMARY KEY AUTOINCREMENT,
-  repo       TEXT NOT NULL,        -- absolute repo path or a stable name
+  repo       TEXT NOT NULL,        -- the repo's absolute path, forward slashes: C:/code/app
   story      TEXT REFERENCES stories(id),
   title      TEXT NOT NULL,
   goal       TEXT,
@@ -19,6 +19,10 @@ CREATE TABLE IF NOT EXISTS tickets (
              CHECK (status IN ('todo','in-progress','review','needs-you','blocked','done')),
   branch     TEXT,
   pr_url     TEXT,
+  autonomy   TEXT CHECK (autonomy IN ('ask','review','merge')),  -- NULL = use repo_settings
+  land       TEXT CHECK (land IN ('pr','local')),                -- NULL = use repo_settings
+  manager_dispatch TEXT,           -- Orca dispatch id of the owning manager; pr_watch mails it
+  depends_on TEXT,                 -- ticket ids this one waits on, comma list: '12,14'
   fix_rounds INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
   started_at TEXT,
@@ -58,6 +62,19 @@ CREATE TABLE IF NOT EXISTS decisions (   -- used by the decision-log skill
   why      TEXT,
   evidence TEXT,
   result   TEXT
+);
+
+CREATE TABLE IF NOT EXISTS repo_settings (   -- how far agents go alone; repo='*' = machine default
+  repo     TEXT PRIMARY KEY,
+  autonomy TEXT NOT NULL DEFAULT 'review' CHECK (autonomy IN ('ask','review','merge')),
+  land     TEXT NOT NULL DEFAULT 'pr' CHECK (land IN ('pr','local'))
+);
+INSERT OR IGNORE INTO repo_settings(repo) VALUES ('*');
+
+CREATE TABLE IF NOT EXISTS pr_watch (        -- last seen state per PR, owned by skills/watch-pr/pr_watch.py
+  pr_url     TEXT PRIMARY KEY,
+  snapshot   TEXT NOT NULL,                 -- JSON
+  updated_at TEXT NOT NULL
 );
 
 CREATE INDEX IF NOT EXISTS tickets_repo_status ON tickets(repo, status);
