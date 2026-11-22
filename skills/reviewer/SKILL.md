@@ -16,6 +16,8 @@ Skills named here are zanuar-stack's (`orchestrator`, `manager`, `worker`, `revi
    - the verify commands pass when *you* run them
    - nothing breaks outside the diff: callers, edge cases, error paths (**ripple-check** for risky changes)
    - scope held: no unrelated edits, debug leftovers or secrets
+   - **comment-sweep** was done: no narration, stale comments or comments excusing a workaround
+   - if the repo has `verify/` and the ticket changes user-facing behavior (or the owner asks), run the matching **make-verify** feature recipe and check its proof; otherwise unit tests, typecheck and lint are enough
 4. Send the verdict as your final message to the manager:
    - `PASS: <one line why>`
    - `FIX: 1) file:line problem → expected 2) …`, most severe first. Real defects only; style nits don't count.

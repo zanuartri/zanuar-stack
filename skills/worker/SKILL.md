@@ -24,9 +24,10 @@ Skills named here are zanuar-stack's (`orchestrator`, `manager`, `worker`, `revi
 
 ## Finish
 1. Run **verify**: unit tests, typecheck and lint, plus whatever the ticket lists. Read the output. Fix failures; don't explain them away.
-2. Commit everything. `git status` is clean.
-3. Set the ticket to `review` and end your `runs` row with `done`.
-4. Report: `done: <what changed>; verify: <command → pass/fail>; risks: <any>`.
+2. Run **comment-sweep** on your diff and apply what it accepts.
+3. Commit everything. `git status` is clean.
+4. Set the ticket to `review` and end your `runs` row with `done`.
+5. Report: `done: <what changed>; verify: <command → pass/fail>; risks: <any>`.
 
 If you can't finish: set `blocked`, end your run with `blocked`, and say exactly what is in the way and what you tried.
 

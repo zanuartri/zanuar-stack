@@ -38,6 +38,8 @@ Shared state is one SQLite file, `~/.orca/tickets/tickets.db` (see [`db/`](db/RE
 | [`root-cause`](skills/root-cause/SKILL.md) | fix where it first went wrong |
 | [`test-first`](skills/test-first/SKILL.md) | failing regression test, then fix |
 | [`ripple-check`](skills/ripple-check/SKILL.md) | what breaks outside the diff, proven |
+| [`comment-sweep`](skills/comment-sweep/SKILL.md) | delete comments that don't earn their place, encode real constraints |
+| [`make-verify`](skills/make-verify/SKILL.md) | repo-local recipe to launch the app and prove a feature (optional) |
 | [`decision-log`](skills/decision-log/SKILL.md) | auditable trail in the db or a TSV |
 | [`setup-zanuar-stack`](skills/setup-zanuar-stack/SKILL.md) | run once: ticket db + who plays each role |
 | [`adopt`](skills/adopt/SKILL.md) | take over a PR or branch, keep credit |
@@ -107,7 +109,7 @@ The ideas here are adapted, in our own words, from:
 
 - [herdr-rig](https://github.com/zanuartri/herdr-rig): the orchestrator / manager / worker / reviewer roles.
 - Matt Pocock's "grill me" pattern: the `interview` skill.
-- [backnotprop/pstack](https://github.com/backnotprop/pstack): `figure-it-out`, `sharpen`, `architect`, `show-me-your-work`, `tdd`, `principle-fix-root-causes`, `principle-subtract-before-you-add`, `blast-radius` → `big-plan`, `brief`, `shape-first`, `decision-log`, `test-first`, `root-cause`, `cut-first`, `ripple-check`.
+- Poteto's pstack ([cursor/plugins/pstack](https://github.com/cursor/plugins/tree/main/pstack), mirror [backnotprop/pstack](https://github.com/backnotprop/pstack)): `figure-it-out`, `sharpen`, `architect`, `show-me-your-work`, `tdd`, `principle-fix-root-causes`, `principle-subtract-before-you-add`, `blast-radius` → `big-plan`, `brief`, `shape-first`, `decision-log`, `test-first`, `root-cause`, `cut-first`, `ripple-check`. Also `no-comments` → `comment-sweep`, and `create-verification-skill` + `maintain-verification-skill` → `make-verify`, both adapted from Poteto's pstack (cursor/plugins/pstack).
 - [t3dotgg/tstack](https://github.com/t3dotgg/tstack): `takeover`, `file-pr`, `babysit-pr`, `leaving-pr-comments` → `adopt`, `open-pr`, `watch-pr`, `pr-comments`.
 
 ## License
