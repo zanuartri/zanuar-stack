@@ -7,12 +7,24 @@ The schema is in [`skills/setup-zanuar-stack/schema.sql`](../skills/setup-zanuar
 | table | holds |
 |---|---|
 | `stories` | cross-repo features (`S-12 Link expiry`) |
-| `tickets` | one unit of work in one repo: goal, acceptance, verify, scope, status, branch, PR, timestamps, `fix_rounds` |
+| `tickets` | one unit of work in one repo: goal, acceptance, verify, scope, status, branch, PR, timestamps, `fix_rounds`, optional `autonomy`/`land` overrides, `manager_dispatch`, `depends_on` |
+| `repo_settings` | `autonomy` (`ask`/`review`/`merge`) and `land` (`pr`/`local`) per repo (`repo='*'` is the machine default) |
+| `pr_watch` | last seen state of each watched PR, written by `skills/watch-pr/pr_watch.py` |
 | `runs` | every agent run on a ticket: role, harness, model, effort, mode, result |
 | `repo_config` | who plays which role in a repo (`repo='*'` is the machine default) |
 | `decisions` | optional decision trail (see `skills/decision-log`) |
 
 Statuses: `todo → in-progress → review → done`, with `needs-you` (waiting on the owner) and `blocked` (stuck on something outside the agent's control).
+
+`repo` is always the repo's absolute path with forward slashes: `C:/code/app`, `/home/me/app`. One spelling, so every agent's queries match.
+
+## Easiest: tq.py
+
+```sh
+python skills/setup-zanuar-stack/tq.py sql "SELECT id,title,status FROM tickets WHERE repo=?" C:/code/app
+```
+
+Values go in as parameters (`-` for NULL), so nothing needs quoting. The one-liners below do the same by hand.
 
 ## Create
 

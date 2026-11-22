@@ -15,7 +15,7 @@ Explore, show what you found, ask, then write. Safe to re-run: the schema is ide
 
 ## Python on Windows
 
-Every step runs `init_db.py` next to this file with Python's stdlib only. On Windows run it from **PowerShell**: Git Bash `python` is often a pyenv/Store shim that mangles arguments. In PowerShell 5.1 an empty `''` argument is dropped, so the script takes `-` for "no model / no effort".
+Every step runs `init_db.py` next to this file with Python's stdlib only. On Windows run it from **PowerShell**: Git Bash `python` is often a pyenv/Store shim that mangles arguments. In PowerShell 5.1 an empty `''` argument is dropped, so the script takes `-` for "no model / no effort". Re-running `init_db.py` also migrates an older db (new tables and columns). Agents run other queries through `tq.py sql "<SQL>" [params...]` next to this file, so nobody hand-quotes SQL.
 
 ## 1. Explore
 
@@ -47,12 +47,27 @@ Roles in order: **manager**, **worker**, **reviewer**. For each, ask four things
 
 If the list command fails, say so and ask the owner for the id instead of inventing one. A harness Orca can't configure (see the adapter: commandcode and others ignore `--model`/`--effort`) gets model `-` and effort `-`.
 
+Then ask two things once, for the same scope:
+
+| field | ask | default |
+|---|---|---|
+| autonomy | `ask` (confirm after each ticket), `review` (agents loop alone, ask before merge), `merge` (merge when review, verify and PR checks are green) | `review` |
+| land | `pr` (push and open a PR) or `local` (squash into the base, no PR) | `pr` |
+
+Tell the owner that `merge` is their standing OK for agents to merge in that scope.
+
 ## 3. Write
 
 One call per role:
 
 ```powershell
 python <this dir>/init_db.py set <repo|*> <role> <harness> <model|-> <effort|-> <orca|headless>
+```
+
+and one for the settings:
+
+```powershell
+python <this dir>/init_db.py settings <repo|*> <ask|review|merge> <pr|local>
 ```
 
 Then `python <this dir>/init_db.py show <repo>` and read the rows back to the owner.

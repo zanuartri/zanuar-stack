@@ -74,12 +74,25 @@ cd ../wt/t-<id>
 | claude | `claude -p "<prompt>" --model <model>` |
 | codex | `codex exec "<prompt>"` (add `-m <model>`) |
 | omp | `omp -p "<prompt>"` |
-| commandcode | `commandcode -p "<prompt>"` |
+| commandcode | `commandcode -p "<prompt>" --yolo --max-turns 24` |
 
 Flags differ per harness and version; check its `--help`. Run it as a background command so the manager is woken when it exits, and read the verdict or report from its final output. Record the run in `runs` with `mode='headless'`.
 
 Remove a headless worktree after its PR merges: `git -C <repo> worktree remove ../wt/t-<id>`.
 
+## Retries and quiet workers
+
+- `worker-start --terminal <handle>` is rejected for a retry. Start a fresh session in the same worktree with `--worktree id:<worktreeId>`.
+- Orca names child branches `<user>/t-<id>`. Record that real name on the ticket.
+- A worker (omp in particular) can go idle without `worker_done`. Check `orca orchestration worker-show --dispatch <id>` and the worktree's `git log` before deciding.
+- `orca orchestration check --wait` prints heartbeat JSON on stderr, which PowerShell reports as errors. Redirect it (`2>$null`) or run it from bash.
+
+## commandcode as headless reviewer
+
+`commandcode -p "<prompt>" --yolo --max-turns 24` (12 turns ran out on real tickets). Tell it to write its verdict line to a file and read that file: a run can exit 0 without a verdict. No `PASS`/`FIX` line in it: retry once.
+
 ## Watching PRs
 
-Prefer an Orca automation over polling: `orca automations create` with a trigger on the PR's `github.ci_*` events that messages the owning session. Remove it when the PR is ready (`orca automations remove`). See `skills/watch-pr`.
+Default: the local watcher in `skills/watch-pr/pr_watch.py`. It needs only `gh` and Python, polls GitHub with one GraphQL call per tick for every open ticket PR, and wakes the owning manager with `orca orchestration send --to dispatch:<tickets.manager_dispatch>` only when something changed. See `skills/watch-pr`.
+
+Optional, with Orca Cloud: `orca automations create` with a trigger on the PR's `github.*` events that messages the owning session. Remove it when the PR is ready (`orca automations remove`).
