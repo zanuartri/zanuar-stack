@@ -9,7 +9,7 @@
 
 Running many coding agents at once is easy. Keeping track of them is not: who owns which task, what got reviewed, which PR is waiting on you.
 
-zanuar-stack is a skill pack that gives agents a small team structure. One **orchestrator** plans across repos, one **manager** per repo turns briefs into tickets, and a **worker** and **reviewer** handle each ticket in its own worktree. You make the decisions; they keep the books. Built for [Orca](https://github.com/stablyai/orca) first, but the skills only assume a harness that can start another agent and pass messages.
+zanuar-stack is a skill pack that gives agents a small team structure. The **orchestrator** picks the smallest lane that fits: it handles quick work itself, runs a **worker** and **reviewer** directly for a single ticket, and starts one **manager** per repo only for larger, parallel or cross-repo work. You make the decisions; they keep the books. Built for [Orca](https://github.com/stablyai/orca) first, but the skills only assume a harness that can start another agent and pass messages.
 
 ## Quick start
 
@@ -22,7 +22,7 @@ act as orchestrator: add rate limiting to the API and show the limit in the dash
 act as manager for this repo: fix the flaky login test and open a PR
 ```
 
-The orchestrator interviews you, writes one brief per repo and starts a manager for each. The manager splits the work into tickets, dispatches workers, has each reviewed, and opens PRs. You hear back when a decision is yours.
+The orchestrator picks the smallest lane that fits. It handles quick work itself, runs a worker and reviewer directly for a single ticket, and starts a manager per repo only for larger, parallel or cross-repo work.
 
 ## How it works
 
