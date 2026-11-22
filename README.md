@@ -1,5 +1,7 @@
 # zanuar-stack
 
+![zanuar-stack: run your coding agents like a team](docs/hero.png)
+
 A skill pack for running coding agents as a small team: one **orchestrator** across repos, one **manager** per repo, and a **worker** plus **reviewer** per ticket. Built for [Orca](https://github.com/stablyai/orca) first, but the skills only assume a harness that can start another agent and pass messages, so they work elsewhere too.
 
 ```
