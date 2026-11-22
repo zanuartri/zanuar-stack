@@ -1,12 +1,12 @@
 # zanuar-stack
 
-A skill pack for running coding agents as a small team: one **lead** across repos, one **manager** per repo, and a **worker** plus **reviewer** per ticket. Built for [Orca](https://github.com/stablyai/orca) first, but the skills only assume a harness that can start another agent and pass messages, so they work elsewhere too.
+A skill pack for running coding agents as a small team: one **orchestrator** across repos, one **manager** per repo, and a **worker** plus **reviewer** per ticket. Built for [Orca](https://github.com/stablyai/orca) first, but the skills only assume a harness that can start another agent and pass messages, so they work elsewhere too.
 
 ```
                  owner
                    │  decisions only
                    ▼
-                 lead ──── interview → story + one brief per repo
+             orchestrator ── interview → story + one brief per repo
         ┌──────────┼──────────┐
         ▼          ▼          ▼
      manager    manager    manager      one per repo, kept open
@@ -23,7 +23,7 @@ Shared state is one SQLite file, `~/.orca/tickets/tickets.db` (see [`db/`](db/RE
 
 | role skills | |
 |---|---|
-| [`lead`](skills/lead/SKILL.md) | cross-repo planning, briefs, escalation; never codes |
+| [`orchestrator`](skills/orchestrator/SKILL.md) | cross-repo planning, briefs, escalation; never codes |
 | [`manager`](skills/manager/SKILL.md) | tickets, dispatch, triage, review loop, PR |
 | [`worker`](skills/worker/SKILL.md) | one ticket, verify, report |
 | [`reviewer`](skills/reviewer/SKILL.md) | full-diff review, PASS or FIX |
@@ -56,7 +56,7 @@ cp -r skills/* ~/.claude/skills/
 # other harnesses: copy skills/* into their skills dir
 ```
 
-Create the db with the commands in [`db/README.md`](db/README.md). Then start a session with the `lead` skill (several repos) or the `manager` skill (one repo).
+Create the db with the commands in [`db/README.md`](db/README.md). Then start a session with the `orchestrator` skill (several repos) or the `manager` skill (one repo).
 
 ## Credits
 

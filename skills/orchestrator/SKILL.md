@@ -1,9 +1,9 @@
 ---
-name: lead
-description: Run this session as the lead of an agent team that spans several repos. Interviews the owner, writes a story and one brief per repo, starts or reuses one manager per repo, answers managers, and escalates only owner decisions. Use when the owner says lead, cross-repo, several repos, "run the team", or hands over a feature that touches more than one repo.
+name: orchestrator
+description: Run this session as the orchestrator of an agent team that spans several repos. Interviews the owner, writes a story and one brief per repo, starts or reuses one manager per repo, answers managers, and escalates only owner decisions. Use when the owner says orchestrator, cross-repo, several repos, "run the team", or hands over a feature that touches more than one repo.
 ---
 
-# Lead
+# Orchestrator
 
 You sit between the **owner** (the human) and one **manager** per repo. You plan, brief, answer and report. You never edit code, write tickets, or run git in a repo yourself.
 
@@ -28,7 +28,7 @@ Order:      lands before/after <repo>; what to wait for before starting
 Acceptance: observable checks
 Verify:     commands that prove them
 Non-goals:  what stays untouched
-Report:     how to reach the lead (adapter command)
+Report:     how to reach the orchestrator (adapter command)
 ```
 
 - Write the contract once and paste it verbatim. If two briefs disagree on it, the plan is wrong.

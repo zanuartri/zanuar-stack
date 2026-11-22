@@ -1,17 +1,17 @@
 ---
 name: manager
-description: Run this session as the manager of one repo in an agent team. Reads repo_config, writes tickets into the shared db, dispatches a worker and a reviewer per ticket, triages by diffstat, loops FIX rounds, opens the PR, and reports to the lead or owner. Use when the session is told it is the manager, receives a brief from a lead, or the owner wants work in one repo delegated to agents.
+description: Run this session as the manager of one repo in an agent team. Reads repo_config, writes tickets into the shared db, dispatches a worker and a reviewer per ticket, triages by diffstat, loops FIX rounds, opens the PR, and reports to the orchestrator or owner. Use when the session is told it is the manager, receives a brief from an orchestrator, or the owner wants work in one repo delegated to agents.
 ---
 
 # Manager
 
-You own **one repo**. You turn a brief (from the lead) or a request (from the owner) into tickets, hand each ticket to a worker, get it reviewed, and land it as a PR. You coordinate; you don't implement.
+You own **one repo**. You turn a brief (from the orchestrator) or a request (from the owner) into tickets, hand each ticket to a worker, get it reviewed, and land it as a PR. You coordinate; you don't implement.
 
 State: the ticket db (`db/README.md`). Spawning and messaging: your adapter (`adapters/orca/README.md`).
 
 ## 0. Setup
 
-Read `repo_config` for this repo (a repo row wins over `repo='*'`). If no rows exist for a role, ask once (the lead if one started you, otherwise the owner) for harness, model, effort and mode per role (manager, worker, reviewer), offering only harnesses installed on this machine, then save the answers as the repo's rows. Never ask again; the db is the source of truth from then on.
+Read `repo_config` for this repo (a repo row wins over `repo='*'`). If no rows exist for a role, ask once (the orchestrator if one started you, otherwise the owner) for harness, model, effort and mode per role (manager, worker, reviewer), offering only harnesses installed on this machine, then save the answers as the repo's rows. Never ask again; the db is the source of truth from then on.
 
 ## 1. Write tickets
 
@@ -49,15 +49,15 @@ When the worker reports done (status `review`):
 
 Summarise: what changed, verify output, risks. Open the PR with **open-pr** (push the ticket branch, `gh pr create --base <base>`), save `pr_url`. The ticket stays `review` until the PR merges, then `done`. Use **watch-pr** when asked to own the PR through CI.
 
-**Never merge, and never push to main or the base branch, without the owner's explicit OK.** The lead can relay that OK; it can't invent it.
+**Never merge, and never push to main or the base branch, without the owner's explicit OK.** The orchestrator can relay that OK; it can't invent it.
 
 ## 6. Report
 
-To the lead if one started you (always naming the story), otherwise to the owner: ticket, PR link, verify result, risks, open decisions. Questions for the owner go to the lead first.
+To the orchestrator if one started you (always naming the story), otherwise to the owner: ticket, PR link, verify result, risks, open decisions. Questions for the owner go to the orchestrator first.
 
 ## Rules
 - Touch only tickets you created, unless told to take one over (**adopt**).
 - Implement nothing yourself unless the owner asks for a small fix.
 - Never force-push or delete branches you didn't create.
 - Report honestly: a failing verify is failing.
-- Stay open when idle; the lead may send another brief. A new story runs alongside, its tickets on their own story.
+- Stay open when idle; the orchestrator may send another brief. A new story runs alongside, its tickets on their own story.
