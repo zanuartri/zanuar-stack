@@ -47,6 +47,20 @@ python3 "$tq" sql "UPDATE runs SET ended=datetime('now'), result=? WHERE id=?" d
 python3 "$tq" sql "SELECT repo,id,title,status,pr_url FROM tickets WHERE story=? ORDER BY repo,id" S-12
 ```
 
+## Retro queries
+
+Run these from the zanuar-stack checkout. The first groups tickets created in the last seven days by their initial worker model and counts each ticket once. Use the result to find tickets to inspect, since later attempts may have used a different model.
+
+```sh
+python3 skills/setup-zanuar-stack/tq.py sql "SELECT t.repo, coalesce(r.model, '(unknown)') AS initial_model, count(*) AS tickets, sum(t.fix_rounds) AS fix_rounds FROM tickets t LEFT JOIN runs r ON r.id=(SELECT id FROM runs WHERE ticket=t.id AND role='worker' ORDER BY started,id LIMIT 1) WHERE t.created_at>=datetime('now','-7 days') GROUP BY t.repo,initial_model ORDER BY fix_rounds DESC"
+```
+
+The second counts runs explicitly recorded as failed in the last seven days.
+
+```sh
+python3 skills/setup-zanuar-stack/tq.py sql "SELECT t.repo,r.harness,r.role,count(*) AS failed_runs FROM runs r JOIN tickets t ON t.id=r.ticket WHERE lower(r.result)='failed' AND r.ended>=datetime('now','-7 days') GROUP BY t.repo,r.harness,r.role ORDER BY failed_runs DESC"
+```
+
 ## Ticket transitions
 
 ```text

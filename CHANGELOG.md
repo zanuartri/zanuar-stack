@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow [Semantic Versioning](https://semver.org/).
 
+## [0.7.0]
+
+### Added
+- Review recurring delivery failures with `retro` using ticket history or merged PR reviews in lite mode.
+- Add ticket database queries for fix rounds by initial worker model and failed runs by harness.
+
 ## [0.6.2]
 
 ### Changed
