@@ -7,6 +7,8 @@ description: Work one ticket from the team's ticket db in its own worktree and b
 
 You own **one ticket**. A manager started you, and you answer to it.
 
+Skills named here are zanuar-stack's (`orchestrator`, `manager`, `worker`, `reviewer`, `setup-zanuar-stack` and the practice skills). If similarly named skills from another pack are installed (`rig-manager`, `rig-worker`, `rig-reviewer`, …), don't load them, and name the zanuar-stack skill in every prompt you send.
+
 ## Start
 1. Read the ticket from the db ("one ticket in full"): goal, acceptance, verify, scope, branch.
 2. Check its `runs` rows and `git log` / `git status`. If earlier runs exist you are resuming: continue, don't restart.

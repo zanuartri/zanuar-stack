@@ -7,6 +7,8 @@ description: Run this session as the orchestrator of an agent team that spans se
 
 You sit between the **owner** (the human) and one **manager** per repo. You plan, brief, answer and report. You never edit code, write tickets, or run git in a repo yourself.
 
+Skills named here are zanuar-stack's (`orchestrator`, `manager`, `worker`, `reviewer`, `setup-zanuar-stack` and the practice skills). If similarly named skills from another pack are installed (`rig-manager`, `rig-worker`, `rig-reviewer`, …), don't load them, and name the zanuar-stack skill in every prompt you send.
+
 State lives in the ticket db (`db/README.md`, default `~/.orca/tickets/tickets.db`). Spawning and messaging go through your harness adapter (`adapters/orca/README.md` for Orca).
 
 ## 1. Interview first

@@ -4,6 +4,8 @@ How the four roles map onto [Orca](https://github.com/stablyai/orca)'s `orca orc
 
 The ticket db stays the source of truth for tickets and runs. Orca carries the sessions and the messages.
 
+Skill names below are this pack's: `orchestrator`, `manager`, `worker`, `reviewer`, `setup-zanuar-stack`. If the harness also has look-alikes from another pack (`rig-manager`, `rig-worker`, `rig-reviewer`, …), spawn prompts must name the zanuar-stack skill and agents must not load the others.
+
 ## Roles at a glance
 
 | role | started by | how | stays open |
@@ -18,14 +20,17 @@ The ticket db stays the source of truth for tickets and runs. Orca carries the s
 Start one manager per repo and keep it open so later briefs reuse it:
 
 ```sh
+orca worktree ps --json      # find the repo's row; copy its worktreeId
 orca orchestration worker-start --keep-open \
-  --worktree path:<repo> \
+  --worktree id:<repoId>::<abs path> \
   --agent <harness> --model <model> --effort <effort> \
   --task-title "manager: <repo>" \
   --spec-file brief-<repo>.md
 ```
 
-`--worktree path:<repo>` opens the manager in that repo's existing checkout. Don't combine it with `--repo`, `--name` or `--base-branch`: those only apply when creating a worktree (`new-child`, `new-top-level`), and `current` means the caller's own worktree, not the repo's.
+Pass the row's `worktreeId` as `id:<worktreeId>` (it already has the form `<repoId>::<abs path>`). `path:<abs>` can fail to match even for a correct path, so don't rely on it. Don't combine `--worktree` with `--repo`, `--name` or `--base-branch`: those only apply when creating a worktree (`new-child`, `new-top-level`), and `current` means the caller's own worktree, not the repo's.
+
+On Windows give paths in native form, `C:/code/app` or `C:\code\app`, never Git Bash's `/c/code/app`: Orca resolves them itself and the POSIX form doesn't exist for it. This applies to `--spec-file`, `--repo path:` and anything else passed to `worker-start`.
 
 `--model` / `--effort` work only for agents Orca can configure: Claude, Codex, Cursor, Antigravity, Grok, Muse, OMP (model selector; effort = thinking level) and Pi. Other agents (e.g. commandcode) ignore them and use the model from their own config, so drop both flags for those.
 
@@ -35,7 +40,7 @@ Before starting, check for a live one with `orca orchestration worker-list` (or 
 orca orchestration send --to dispatch:<id> --subject "brief S-12" --body-file brief-<repo>.md
 ```
 
-The orchestrator waits with `orca orchestration check` (Orca wakes it on new mail) and answers with `orca orchestration reply --id <message_id> --body "…"`.
+The orchestrator waits with `orca orchestration check` (Orca wakes it on new mail). `check` takes no `--from`: it reads the calling session's own mailbox (`--terminal <handle>` only to read another). It answers with `orca orchestration reply --id <message_id> --body "…"`.
 
 ## Manager → worker (mode `orca`)
 
@@ -44,7 +49,7 @@ orca orchestration worker-start \
   --repo path:<repo> --worktree new-child --name t-<id> --base-branch <base> \
   --agent <worker harness> --model <model> --effort <effort> \
   --task-title "T-<id> <title>" \
-  --spec "You are the worker for ticket <id> in ~/.orca/tickets/tickets.db. Load the worker skill."
+  --spec "You are the worker for ticket <id> in ~/.orca/tickets/tickets.db. Load the zanuar-stack `worker` skill, not rig-worker or any other look-alike."
 ```
 
 The worker reports with `orca orchestration send --type worker_done …` and asks with `orca orchestration ask …`; the manager receives both through `check`. `worker-read` shows bounded output when a worker goes quiet. Steer with `send --to dispatch:<id>`, stop with `worker-stop`.

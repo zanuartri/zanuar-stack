@@ -2,7 +2,7 @@
 
 All shared state lives in one SQLite file: `~/.orca/tickets/tickets.db`.
 Agents read and write it with Python's stdlib `sqlite3`, because the `sqlite3` CLI is often missing.
-The schema is in [`schema.sql`](schema.sql).
+The schema is in [`skills/setup-zanuar-stack/schema.sql`](../skills/setup-zanuar-stack/schema.sql), shipped inside the setup skill so every install route carries it.
 
 | table | holds |
 |---|---|
@@ -16,17 +16,12 @@ Statuses: `todo → in-progress → review → done`, with `needs-you` (waiting 
 
 ## Create
 
-Bash / Git Bash / zsh:
+Run `/setup-zanuar-stack` once: it creates the db and asks who plays each role. By hand (on Windows use PowerShell, not Git Bash's `python` shim):
 
 ```sh
-mkdir -p ~/.orca/tickets
-python -c "import sqlite3,os;d=os.path.expanduser('~/.orca/tickets/tickets.db');sqlite3.connect(d).executescript(open('db/schema.sql').read())"
-```
-
-Optional: seed machine-wide defaults (replace the placeholders with your own; skip this and the manager asks on first use):
-
-```sh
-python -c "import sqlite3,os;c=sqlite3.connect(os.path.expanduser('~/.orca/tickets/tickets.db'));c.executemany('INSERT OR REPLACE INTO repo_config VALUES (?,?,?,?,?,?)',[('*','manager','<harness>','<model>','<effort>','orca'),('*','worker','<harness>','<model>','<effort>','orca'),('*','reviewer','<harness>','<model>','<effort>','headless')]);c.commit()"
+python skills/setup-zanuar-stack/init_db.py                     # create, idempotent
+python skills/setup-zanuar-stack/init_db.py set '*' worker <harness> <model|-> <effort|-> orca
+python skills/setup-zanuar-stack/init_db.py show
 ```
 
 ## Query templates

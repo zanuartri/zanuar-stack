@@ -1,0 +1,13 @@
+{
+  "name": "zanuar-stack",
+  "version": "0.2.0",
+  "description": "Skills for running coding agents as a small team: one orchestrator, one manager per repo, a worker and a reviewer per ticket.",
+  "author": {
+    "name": "zanuartri",
+    "url": "https://github.com/zanuartri"
+  },
+  "repository": "https://github.com/zanuartri/zanuar-stack",
+  "license": "MIT",
+  "keywords": ["agents", "orchestration", "skills", "code-review", "orca"],
+  "skills": "./skills/"
+}

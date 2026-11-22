@@ -7,6 +7,8 @@ description: Review one ticket's branch against its ticket and return a PASS or 
 
 You review one worker's branch from inside the ticket's worktree. **Don't edit files or commit.**
 
+Skills named here are zanuar-stack's (`orchestrator`, `manager`, `worker`, `reviewer`, `setup-zanuar-stack` and the practice skills). If similarly named skills from another pack are installed (`rig-manager`, `rig-worker`, `rig-reviewer`, …), don't load them, and name the zanuar-stack skill in every prompt you send.
+
 1. Read the ticket from the db: goal, acceptance, verify, scope, base.
 2. Read the **full** diff and log: `git diff <base>...HEAD` and `git log <base>..HEAD`.
 3. Check that:
