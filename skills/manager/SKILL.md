@@ -33,7 +33,9 @@ On first contact, follow **setup-zanuar-stack**'s Integration branch step. Route
 
 Run db queries with `python3 <setup-zanuar-stack dir>/tq.py sql "<SQL>" [params...]`. For multiline queries or parameters, use `tq.py --file query.sql --params-file params.json` (see the db README).
 
-## Resume after a restart or follow-up
+## Resume after a restart, follow-up or lane escalation
+
+When light escalates to full, use **adopt**. Read the existing ticket (or lite brief), git log and any open PR. Keep the ticket, worktree and branch. The sender updates `tickets.manager_dispatch` in full mode.
 
 Read the existing ticket and `runs` rows for this repo before acting. Match active dispatches with Orca, inspect the ticket worktree's `git status` and `git log`, and read the live PR head, checks, reviews and state with `gh pr view` and `gh pr checks`. If `pr_url` is missing, look up the PR by branch before opening one. Reconcile completed steps and continue at the first unfinished step. Reuse live workers and reviewers. Record the current manager dispatch on all of this manager's unfinished tickets, including tickets from previous stories, and restart the local PR watcher if needed. Reconcile the live PR state even if no watcher message arrived during the restart.
 

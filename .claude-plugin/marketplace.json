@@ -9,7 +9,7 @@
     {
       "name": "zanuar-stack",
       "source": "./",
-      "description": "Orchestrator, manager, worker and reviewer roles plus practice skills (interview, root-cause, test-first, open-pr and more).",
+      "description": "Orchestrator, manager, worker and reviewer roles plus practice skills (interview, craft, plan, open-pr and more).",
       "category": "engineering",
       "keywords": ["agents", "orchestration", "skills", "code-review", "orca"]
     }

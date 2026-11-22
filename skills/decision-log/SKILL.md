@@ -1,6 +1,6 @@
 ---
 name: decision-log
-description: Keep a reviewable trail of decisions for long or unattended work, one row per decision (what, why, evidence, result), in the ticket db or a TSV. Use for multi-phase runs, big-plan work, or when the owner says log your decisions or show your work.
+description: Keep a reviewable trail of decisions for long or unattended work, one row per decision (what, why, evidence, result), in the ticket db or a TSV. Use for multi-phase runs or when the owner says log your decisions or show your work.
 ---
 
 # Decision log

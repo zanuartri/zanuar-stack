@@ -14,8 +14,8 @@ Skill names below are this pack's: `orchestrator`, `manager`, `worker`, `reviewe
 |---|---|---|---|
 | orchestrator | owner | an ordinary Orca agent session with the `orchestrator` skill | yes |
 | manager | orchestrator (or owner) | `worker-start --keep-open` in the repo | yes, reused per repo |
-| worker | manager | `worker-start` in a new child worktree (mode `orca`) or headless | until PASS |
-| reviewer | manager | headless in the worker's worktree (default) or `worker-start` | no |
+| worker | manager or light-lane orchestrator | `worker-start` in a new child worktree (mode `orca`) or headless | until PASS |
+| reviewer | manager or orchestrator | headless in the change's worktree (default) or `worker-start` | no |
 
 ## Orchestrator → manager
 

@@ -1,11 +1,11 @@
 ---
 name: orchestrator
-description: Run this session as the orchestrator of an agent team that spans several repos. Interviews the owner, writes a story and one brief per repo, starts or reuses one manager per repo, answers managers, and escalates only owner decisions. Use when the owner says orchestrator, cross-repo, several repos, "run the team", or hands over a feature that touches more than one repo.
+description: Coordinate work for the owner, from quick fixes to stories across several repos. Use when the owner says orchestrator, cross-repo, several repos, "run the team", or hands over a feature that touches more than one repo.
 ---
 
 # Orchestrator
 
-You sit between the **owner** (the human) and one **manager** per repo. You plan, brief, answer and report. You never edit code or write tickets. You use git to inspect repos and bootstrap new ones.
+You are the **owner**'s point of contact. Use the smallest lane that fits the work.
 
 Skills named here are zanuar-stack's (`orchestrator`, `manager`, `worker`, `reviewer`, `setup-zanuar-stack` and the practice skills). If similarly named skills from another pack are installed (`rig-manager`, `rig-worker`, `rig-reviewer`, …), don't load them, and name the zanuar-stack skill in every prompt you send.
 
@@ -17,15 +17,25 @@ Run [retro](../retro/SKILL.md) when the owner requests one or on a schedule the 
 
 If the owner chooses lite or the configured DB is absent (`ZANUAR_DB` or the default above), keep the story, contracts, dependencies and status in chat and briefs. Pass the mode and the agreed launch and base settings to each manager. Keep the same interview and reporting loop and skip all DB reads and writes, including story rows and dispatch tracking.
 
-## 1. Interview first
+## 1. Interview and pick a lane
 
 Use a [design handoff](../design-handoff/SKILL.md) to write the story and briefs, interview only for gaps, and carry its acceptance checks into the briefs.
 
 For other feature requests, start with the **interview** skill, even when the request looks clear. Stop when goal, scope, acceptance and non-goals are settled and the owner has confirmed the summary. Facts you can look up (repo paths, current code, open tickets) you look up yourself; only decisions go to the owner.
 
-Interview once, at product level: goal, user, scope and repos, the cross-repo contract, per-repo acceptance, merge order and non-goals. Put the result in the briefs. You are the owner's one voice; managers don't interview them.
+Interview once, at product level. Cover the goal, user, scope, acceptance and non-goals. Add the shared contract, per-repo checks and merge order when relevant. Managers take owner decisions through you.
 
 Check that each existing repo path is its git root. Use the new-repo flow for paths the owner wants to create.
+
+### Lanes
+
+After the interview (when needed), state the lane and reason in one line. The owner can change the choice. Once work starts, move only to a larger lane.
+
+- **Direct** handles questions, lookups and trivial edits (typos or small config changes) yourself, without a ticket.
+- **Light** covers one ticket in one repo. Record it in the DB in full mode or keep a text brief in lite mode. Follow the manager skill's ticket, worker, review and PR steps yourself. Dispatch the worker and reviewer directly, open the PR and check CI. Use `gh pr checks` if your session has no dispatch ID for the watcher.
+- **Full** covers several tickets, parallel work, cross-repo work or a long watch until merge. Follow steps 2–5 with one manager per repo.
+
+Every code change needs a separate reviewer in every lane. For direct edits, give the reviewer the scope, base and checks in the prompt. If light grows into full, hand off the existing ticket, worktree and branch to the repo manager and update `tickets.manager_dispatch` in full mode. Have the manager use **adopt** and resume from the ticket, git log and PR if open.
 
 ### New project or repo
 
@@ -57,7 +67,7 @@ Report:     how to reach the orchestrator (adapter command)
 - Write the contract once and paste it verbatim. If two briefs disagree on it, the plan is wrong.
 - Merge order: providers before consumers, config before the code that reads it, migrations before code that needs them.
 - A brief holds only what the manager can't get from the repo. Tickets are the manager's job.
-- For a large or vague story, run **big-plan** before splitting it into briefs.
+- For a large or vague story, use **plan** before splitting it into briefs.
 
 ## 3. Start or reuse managers
 
@@ -86,7 +96,6 @@ When a manager writes:
 Use the story board query from the db README. Per repo: tickets done, in review or blocked, PR links, verify results. A failing verify is reported as failing.
 
 ## Rules
-- Never code or merge. Publishing starting branches during confirmed new-repo bootstrap is the only push exception.
-- Don't read worker or reviewer output; managers summarise for you.
+- Implement only trivial edits in direct. In light, publish only the ticket branch through **open-pr** and follow the manager's merge rules. In full, managers handle ticket work and landing. Confirmed repo bootstrap follows the steps above.
 - Don't poll. Wait for messages the way your adapter describes.
 - Spend the owner's attention on decisions only.

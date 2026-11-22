@@ -28,11 +28,11 @@ In **lite mode** (the owner chose lite or the configured DB is absent), use the 
 - Stuck on a choice? Ask with options and a default ("A or B? going with A unless told otherwise") and keep doing whatever doesn't depend on it.
 - A message from the manager overrides your plan.
 - One-line milestones only when they matter. No chatter.
-- Bugs: **root-cause**, and **test-first** when a cheap test exists.
+- For bugs, use **craft** to trace the root cause and write a focused regression test when one fits.
 
 ## Finish
 1. Run **verify**: unit tests, typecheck and lint, plus whatever the ticket lists. Read the output. Fix failures; don't explain them away.
-2. Run **comment-sweep** on your diff and apply what it accepts.
+2. Sweep your diff for comments using **craft**.
 3. Commit everything. `git status` is clean.
 4. In full mode, end your `runs` row with `done`. The manager sets the ticket to `review`.
 5. Report: `done: <what changed>; verify: <command → pass/fail>; risks: <any>`.

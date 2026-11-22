@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow [Semantic Versioning](https://semver.org/).
 
+## [0.8.0]
+
+### Added
+- Choose direct, light or full orchestration and keep the existing work when moving from light to full.
+
+### Changed
+- Use `craft` in place of `root-cause`, `cut-first`, `test-first` and `comment-sweep`.
+- Use `plan` in place of `big-plan`, `shape-first` and `brief`.
+- Find `ripple-check` in `reviewer` and `pr-comments` in `watch-pr`.
+
 ## [0.7.0]
 
 ### Added

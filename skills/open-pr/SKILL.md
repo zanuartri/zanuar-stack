@@ -16,7 +16,7 @@ description: Open a short, readable pull request for a finished ticket branch. U
 7. Push the branch (never the base) and open a real PR, not a draft, so review bots run: `gh pr create --base <base> --head <branch> --title … --body-file …`. If GraphQL is rate-limited, use `gh api repos/<o>/<r>/pulls -f title=… -f head=… -f base=… -F body=@<file>`.
 8. With a ticket DB, save `pr_url` on the ticket. In lite mode, include the text brief (goal, acceptance, verify, scope) in the PR body and report the URL in chat. Continue with **watch-pr** if asked.
 
-Don't add follow-up comments unless they serve the request; use **pr-comments** when you do.
+For follow-up comments, use [Writing PR comments](../watch-pr/SKILL.md#writing-pr-comments).
 
 ## Non-interactive push
 
