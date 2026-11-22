@@ -25,6 +25,34 @@ TICKET_COLUMNS = {
 }
 
 
+def migrate_ticket_statuses(c):
+    ddl, = c.execute(
+        "SELECT sql FROM sqlite_master WHERE type='table' AND name='tickets'"
+    ).fetchone()
+    old_check = "CHECK (status IN ('todo','in-progress','review','needs-you','blocked','done'))"
+    if old_check not in ddl:
+        return
+
+    # Rebuild in the setup transaction without renaming the referenced table.
+    # SQLite connections here leave foreign key enforcement off during the copy.
+    new_check = "CHECK (status IN ('todo','queued','in-progress','review','needs-you','blocked','done','canceled'))"
+    objects = c.execute(
+        "SELECT sql FROM sqlite_master WHERE tbl_name='tickets' "
+        "AND type IN ('index','trigger') AND sql IS NOT NULL"
+    ).fetchall()
+    sequence = c.execute("SELECT seq FROM sqlite_sequence WHERE name='tickets'").fetchone()
+    _, _, columns = ddl.partition("(")
+    c.execute("CREATE TABLE tickets_new (" + columns.replace(old_check, new_check, 1))
+    c.execute("INSERT INTO tickets_new SELECT * FROM tickets")
+    c.execute("DROP TABLE tickets")
+    c.execute("ALTER TABLE tickets_new RENAME TO tickets")
+    for sql, in objects:
+        c.execute(sql)
+    if sequence:
+        c.execute("DELETE FROM sqlite_sequence WHERE name='tickets'")
+        c.execute("INSERT INTO sqlite_sequence(name, seq) VALUES ('tickets', ?)", sequence)
+
+
 def connect():
     Path(DB).parent.mkdir(parents=True, exist_ok=True)
     c = sqlite3.connect(DB)
@@ -36,6 +64,7 @@ def connect():
         for col, decl in TICKET_COLUMNS.items():
             if col not in have:
                 c.execute(f"ALTER TABLE tickets ADD COLUMN {col} {decl}")
+        migrate_ticket_statuses(c)
         if "base" not in {r[1] for r in c.execute("PRAGMA table_info(repo_settings)")}:
             c.execute("ALTER TABLE repo_settings ADD COLUMN base TEXT")
     return c

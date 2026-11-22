@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS tickets (
   verify     TEXT,
   scope      TEXT,
   status     TEXT NOT NULL DEFAULT 'todo'
-             CHECK (status IN ('todo','in-progress','review','needs-you','blocked','done')),
+             CHECK (status IN ('todo','queued','in-progress','review','needs-you','blocked','done','canceled')),
   branch     TEXT,
   base       TEXT,                  -- NULL = use the repo's integration branch
   pr_url     TEXT,

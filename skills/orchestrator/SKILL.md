@@ -5,11 +5,15 @@ description: Run this session as the orchestrator of an agent team that spans se
 
 # Orchestrator
 
-You sit between the **owner** (the human) and one **manager** per repo. You plan, brief, answer and report. You never edit code, write tickets, or run git in a repo yourself.
+You sit between the **owner** (the human) and one **manager** per repo. You plan, brief, answer and report. You never edit code or write tickets. You use git to inspect repos and bootstrap new ones.
 
 Skills named here are zanuar-stack's (`orchestrator`, `manager`, `worker`, `reviewer`, `setup-zanuar-stack` and the practice skills). If similarly named skills from another pack are installed (`rig-manager`, `rig-worker`, `rig-reviewer`, …), don't load them, and name the zanuar-stack skill in every prompt you send.
 
 State lives in the ticket db (`db/README.md`, default `~/.orca/tickets/tickets.db`). Spawning and messaging go through your harness adapter (`adapters/orca/README.md` for Orca).
+
+## Lite mode
+
+If the owner chooses lite or the configured DB is absent (`ZANUAR_DB` or the default above), keep the story, contracts, dependencies and status in chat and briefs. Pass the mode and the agreed launch and base settings to each manager. Keep the same interview and reporting loop and skip all DB reads and writes, including story rows and dispatch tracking.
 
 ## 1. Interview first
 
@@ -17,7 +21,18 @@ Use a [design handoff](../design-handoff/SKILL.md) to write the story and briefs
 
 For other feature requests, start with the **interview** skill, even when the request looks clear. Stop when goal, scope, acceptance and non-goals are settled and the owner has confirmed the summary. Facts you can look up (repo paths, current code, open tickets) you look up yourself; only decisions go to the owner.
 
-Then check the repos: each path exists and `git -C <path> rev-parse` succeeds. Ask again only about the bad ones.
+Check that each existing repo path is its git root. Use the new-repo flow for paths the owner wants to create.
+
+### New project or repo
+
+This works before the first repo exists and while other stories are running. Keep existing work moving. The new repo can join an active story or start its own.
+
+In the interview, settle whether the project needs one repo or several (for example, API, web and SDK), their shared contract, the stack, and where they live. Use the owner's known code folder or ask for the path. Ask whether to use git hosting, whether hosted repos are public or private, and which branches are the default and integration base.
+
+1. Run `git init -b <default-branch>` in each new repo. Make an empty initial commit so the manager can branch from it. Create the integration branch from that commit if it differs from the default.
+2. Get explicit owner confirmation before creating anything off disk, including creating a hosted repo, publishing branches or making a repo public. Once confirmed, configure the chosen remote and publish the starting branches for hosted review.
+3. Register each repo through the harness adapter. Run **setup-zanuar-stack** for that repo to record roles, autonomy, landing and the agreed base.
+4. Brief the manager to make the skeleton its first ticket. Include project structure, tests, lint and typecheck as applicable, CI and a README. For a local-only repo, have the manager return the reviewed branch and verification results for owner handoff. Hosted landing needs a remote.
 
 ## 2. Write the story and briefs
 
@@ -42,11 +57,11 @@ Report:     how to reach the orchestrator (adapter command)
 
 ## 3. Start or reuse managers
 
-One manager per repo, one repo per manager. If the repo already has an open manager (in Orca, a kept-open session), send it the new brief instead of starting a second one. Otherwise start one with the repo's `repo_config` row for `manager` (falling back to `repo='*'`).
+One manager per repo, one repo per manager. If the repo already has an open manager, send it the new brief instead of starting a second one. Otherwise start one with the repo's `repo_config` row for `manager` (falling back to `repo='*'`).
 
-Managers require a launchable Orca session. If Orca cannot run the configured manager, ask the owner for an Orca-capable configuration.
+Managers require a launchable session. If the adapter cannot run the configured manager, ask the owner for a supported configuration.
 
-When a brief or follow-up creates a new Orca dispatch for a manager, the sender records that new ID in `tickets.manager_dispatch` for all unfinished tickets owned by the manager. Use the send receipt and follow the adapter's dispatch tracking rule for the update.
+When a brief or follow-up gives a manager a new dispatch ID, the sender records it in `tickets.manager_dispatch` for all unfinished tickets owned by the manager. Follow the adapter's dispatch tracking rule.
 
 Start the repos that land first first. Later repos can plan in parallel when their brief says what to wait for.
 
@@ -66,7 +81,7 @@ When a manager writes:
 Use the story board query from the db README. Per repo: tickets done, in review or blocked, PR links, verify results. A failing verify is reported as failing.
 
 ## Rules
-- Never code. Never merge. Never push.
+- Never code or merge. Publishing starting branches during confirmed new-repo bootstrap is the only push exception.
 - Don't read worker or reviewer output; managers summarise for you.
 - Don't poll. Wait for messages the way your adapter describes.
 - Spend the owner's attention on decisions only.

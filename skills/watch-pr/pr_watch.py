@@ -107,7 +107,7 @@ def run():
     while True:
         rows = c.execute("SELECT t.pr_url, t.manager_dispatch, w.snapshot, w.updated_at FROM tickets t "
                          "LEFT JOIN pr_watch w ON w.pr_url = t.pr_url "
-                         "WHERE t.pr_url IS NOT NULL AND t.status <> 'done'").fetchall()
+                         "WHERE t.pr_url IS NOT NULL AND t.status NOT IN ('done','canceled')").fetchall()
         watch = [(r, PR_RE.search(r[0])) for r in rows
                  if PR_RE.search(r[0]) and not (r[2] and json.loads(r[2])["state"] != "OPEN")]
         if not watch:

@@ -55,3 +55,5 @@ run_python "$setup/tq.py" sql 'UPDATE tickets SET base=NULL WHERE id=?' 1
 run_python "$setup/init_db.py" base example -
 test "$(run_python "$setup/tq.py" resolve-base 1 trunk | tr -d '\r')" = trunk
 printf '%s\n' 'Ticket base resolution check passed'
+
+run_python scripts/check-ticket-migration.py
