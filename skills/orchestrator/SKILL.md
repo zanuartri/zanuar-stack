@@ -44,6 +44,8 @@ Report:     how to reach the orchestrator (adapter command)
 
 One manager per repo, one repo per manager. If the repo already has an open manager (in Orca, a kept-open session), send it the new brief instead of starting a second one. Otherwise start one with the repo's `repo_config` row for `manager` (falling back to `repo='*'`).
 
+Managers require a launchable Orca session. If Orca cannot run the configured manager, ask the owner for an Orca-capable configuration.
+
 When a brief or follow-up creates a new Orca dispatch for a manager, the sender records that new ID in `tickets.manager_dispatch` for all unfinished tickets owned by the manager. Use the send receipt and follow the adapter's dispatch tracking rule for the update.
 
 Start the repos that land first first. Later repos can plan in parallel when their brief says what to wait for.

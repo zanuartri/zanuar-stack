@@ -17,22 +17,27 @@ Explore, show what you found, ask, then write. Safe to re-run: the schema is ide
 
 Use `python3` with the scripts next to this file. They use only the standard library. Re-running `init_db.py` also migrates an older db. On Windows use `python` or `py -3` if `python3` is unavailable. Use `-` for an unset model or effort. For multiline SQL or parameters, use `tq.py --file query.sql --params-file params.json`.
 
+On Windows, set `$env:PYTHONIOENCODING = 'utf-8'`. Write files with Python and explicit UTF-8 encoding. Avoid PowerShell pipelines that add a BOM.
+
 ## 1. Explore
 
 - Run `python3 init_db.py` from this skill's directory to initialize the db, then `python3 init_db.py show` to list the current settings.
 - Inside a git repo, use `git rev-parse --show-toplevel` to obtain its absolute path. Ask if the settings are for that repo or for the machine default (`*`). Outside a repo, use `*`.
 - Run `python3 init_db.py detect` to find harness binaries on `PATH` and list existing user skills directories, including `~/.claude/skills`, `~/.codex/skills`, `~/.omp/agent/skills`, `~/.commandcode/skills` and `~/.agents/skills`. Offer only harnesses with binaries on `PATH`. On macOS a Homebrew-installed harness is detected when its bin directory is on `PATH`.
+- Compare installed harnesses with `orca agent installed --json` on the execution host. Record which harnesses Orca can launch in the setup summary.
 
 ## 2. Ask, one role at a time
 
 Roles in order: **manager**, **worker**, **reviewer**. For each, ask four things, leading with a recommendation the owner can accept in one word:
+
+Recommend a stronger model for manager that can reliably follow the full dispatch, review, and PR protocol. Recommend cheaper models for worker and reviewer. S-4's Haiku/Flash-class models did well in those roles, but as managers they skipped review and pushed directly to base.
 
 | field | ask | default |
 |---|---|---|
 | harness | one of the detected harnesses | the one running this setup |
 | model | an id from that harness's own list (below) | the harness's current default |
 | effort | what that harness accepts (e.g. `low`/`medium`/`high`) | `high` for reviewer, `medium` otherwise |
-| mode | `orca` (own Orca session) or `headless` (one-shot run in a worktree) | `orca` for manager and worker, `headless` for reviewer |
+| mode | `orca` (own Orca session) or `headless` (one-shot run in a worktree) | `orca` required for manager and preferred for worker, `headless` for reviewer |
 
 **Never guess a model id.** Read it from the harness, and show the owner a short list:
 
@@ -45,14 +50,17 @@ Roles in order: **manager**, **worker**, **reviewer**. For each, ask four things
 | opencode | `opencode models` |
 | claude | no list command: offer the aliases `opus`, `sonnet`, `haiku`, or a full id the owner reads from `/model` |
 
-If the list command fails, say so and ask the owner for the id instead of inventing one. A harness Orca can't configure (see the adapter: commandcode and others ignore `--model`/`--effort`) gets model `-` and effort `-`.
+If the list command fails, say so and ask the owner for the id. When Orca cannot set the requested model or effort, use headless for that configuration. Use `-` only when the owner approves leaving the setting unset.
 
-Then ask two things once, for the same scope:
+Before saving, verify that Orca accepts the chosen launch-time model and effort for each Orca role. Record the result and save the effective mode in `repo_config`. A setup Orca cannot launch uses `headless` for worker or reviewer and is ineligible for manager.
+
+Then ask for autonomy once for the same scope:
 
 | field | ask | default |
 |---|---|---|
 | autonomy | `ask` (confirm after each ticket), `review` (agents loop alone, ask before merge), `merge` (merge when review, verify and PR checks are green) | `review` |
-| land | `pr` (push and open a PR) or `local` (squash into the base, no PR) | `pr` |
+
+Set `land=pr`. All changes to base go through a PR.
 
 Tell the owner that `merge` permits automatic merges into the repo's non-production integration branch. The GitHub default branch and `main`/`master` always require explicit approval.
 

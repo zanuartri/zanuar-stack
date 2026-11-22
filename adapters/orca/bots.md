@@ -4,21 +4,18 @@ Run `orca bot list` to find bots on this computer, see what each handles, and ge
 
 | Purpose | Command |
 |---|---|
-| Ask for input | `orca orchestration send --to bot:<name> --type question --subject "Review draft" --body-file question.md` |
-| Hand over a job | `orca orchestration send --to bot:<name> --type handoff --chat new --subject "Implement the design" --body-file handoff.md` |
-| Share news | `orca orchestration send --to bot:<name> --type status --subject "Design approved" --body "The design is ready."` |
+| Ask for input | `orca orchestration send --to bot:<recipient> --type question --subject "Review draft" --body-file question.md` |
+| Hand over work | `orca orchestration send --to bot:<recipient> --type handoff --chat new --subject "Take over the task" --body-file handoff.md` |
+| Share news | `orca orchestration send --to bot:<recipient> --type status --subject "Task ready" --body-file status.md` |
 
 Mail goes to the bot's Home Chat by default. Use `--chat new` with a handoff or question to open a separate chat. Answers return as mail to the sender and are available through `orca orchestration check`. The owner sees bot answers on cards in Orca.
 
-- The design lead sends a [design handoff](../../skills/design-handoff/SKILL.md) to the engineering orchestrator, who uses it to write the story and briefs. Engineering can request design using the same headings.
-- Bots send questions, handoffs, and verdicts directly to each other. Bring the owner in for decisions that require the owner.
+Any bot can ask, hand over work, or share news. Name the format in every handoff and follow its skill or heading list. Bring the owner in for decisions that require the owner.
 
-## Design review of a PR
+## Example 1 — Design handoff and review
 
-When a PR changes user-facing UI and a design lead is available, the manager puts the PR link, design handoff, and screenshots for each required state from the [make-verify](../../skills/make-verify/SKILL.md) recipe in `review.md`. Use screenshots from the PR revision under review.
+Use [design-handoff](../../skills/design-handoff/SKILL.md) to request design or pass an approved design to implementation.
 
-```sh
-orca orchestration send --to "bot:<design-lead>" --type question --subject "Review PR UI" --body-file review.md
-```
+To request design review, send the PR link, the handoff, and screenshots of each required state from the [make-verify](../../skills/make-verify/SKILL.md) recipe. Capture proof at the PR revision under review. Compare it with the handoff's acceptance checks and reply **PASS** or **FIX**. For each FIX, give the screen, state, expected result, and actual result or missing screenshot.
 
-The design lead compares the screenshots with the handoff's acceptance checks and replies by mail with **PASS** or **FIX**. For each FIX, give the screen, state, expected result, and actual result or missing screenshot. The manager resolves findings alongside the separate code review.
+Other teams add their own handoff format the same way. Name a skill or agree on headings, then reference that format when sending the handoff.

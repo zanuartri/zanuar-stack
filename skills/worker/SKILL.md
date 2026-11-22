@@ -17,6 +17,7 @@ Skills named here are zanuar-stack's (`orchestrator`, `manager`, `worker`, `revi
 ## Work
 - Plan briefly, then make small, focused commits with clear messages.
 - Keep the repo's line endings (check `.gitattributes` and `git config core.autocrlf`); never normalise files you touch.
+- On Windows, set `$env:PYTHONIOENCODING = 'utf-8'`. Prefer Python with explicit UTF-8 for file writes. Avoid PowerShell pipelines that add a BOM.
 - On big repos, search with `git grep <pattern> -- <paths>` scoped to the area instead of a whole-tree grep that times out.
 - Db queries: `python3 <setup-zanuar-stack dir>/tq.py sql "<SQL>" [params...]`. Use `tq.py --file query.sql --params-file params.json` for multiline input.
 - If a FIX finding conflicts with existing behavior, send the manager the relevant code, caller or test evidence before applying it.
@@ -33,10 +34,11 @@ Skills named here are zanuar-stack's (`orchestrator`, `manager`, `worker`, `revi
 3. Commit everything. `git status` is clean.
 4. Set the ticket to `review` and end your `runs` row with `done`.
 5. Report: `done: <what changed>; verify: <command → pass/fail>; risks: <any>`.
-6. For every Orca dispatch, including a FIX follow-up and on every harness, explicitly send `worker_done` as your last action. Use the command from the current preamble with its task and dispatch IDs and the actual outcome. A headless run without an Orca dispatch leaves the report in its final output.
+6. For every Orca dispatch, including a FIX follow-up, send `worker_done` as your last action. Use the current task and dispatch IDs and actual outcome. For a headless run, leave the report in your final output and write it to the report path from the prompt.
 
 If you can't finish: set `blocked`, end your run with `blocked`, and say exactly what is in the way and what you tried. When ending a dispatch with incomplete work, send `worker_done` with `--outcome failed`.
 
 ## Never
-- Push without authorization, merge into the base branch, or rewrite history outside your branch. When authorized to push your ticket branch, use the non-interactive command in **open-pr**.
+- Never push directly to the base or integration branch. Every change to base goes through a PR. Before any authorized push, set `ticket_branch` from the ticket and `base` to its resolved base, then guard the target `push_ref` with `test -n "$ticket_branch" && test "$ticket_branch" != "$base" && test "$push_ref" = "refs/heads/$ticket_branch" || exit 1`. Push only `HEAD:$push_ref` using **open-pr** credentials.
+- Never push without authorization, merge into base locally, or rewrite history outside your branch.
 - Skip, weaken or fake a check to get to green.
