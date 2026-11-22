@@ -13,15 +13,15 @@ Gets the shared state ready that the `orchestrator`, `manager`, `worker` and `re
 
 Explore, show what you found, ask, then write. Safe to re-run: the schema is idempotent and rows are replaced, not duplicated.
 
-## Python on Windows
+## Python
 
-Every step runs `init_db.py` next to this file with Python's stdlib only. On Windows run it from **PowerShell**: Git Bash `python` is often a pyenv/Store shim that mangles arguments. In PowerShell 5.1 an empty `''` argument is dropped, so the script takes `-` for "no model / no effort". Re-running `init_db.py` also migrates an older db (new tables and columns). Agents run other queries through `tq.py sql "<SQL>" [params...]` next to this file, so nobody hand-quotes SQL.
+Use `python3` with the scripts next to this file. They use only the standard library. Re-running `init_db.py` also migrates an older db. On Windows use `python` or `py -3` if `python3` is unavailable. Use `-` for an unset model or effort. For multiline SQL or parameters, use `tq.py --file query.sql --params-file params.json`.
 
 ## 1. Explore
 
-- Db: `python <this dir>/init_db.py` creates it if missing and prints its path. Then `python <this dir>/init_db.py show` lists existing `repo_config` rows. Tell the owner what is already set.
-- Scope: inside a git repo (`git rev-parse --show-toplevel`), ask whether these answers are the machine default (`*`) or for this repo only (store the repo's absolute path, forward slashes, e.g. `C:/code/app`). Outside a repo, it's `*`.
-- Harnesses: check which are on `PATH` (PowerShell `Get-Command claude,codex,omp,commandcode,opencode,pi -ErrorAction SilentlyContinue`, or `command -v` in a POSIX shell). Offer only the ones found.
+- Run `python3 init_db.py` from this skill's directory to initialize the db, then `python3 init_db.py show` to list the current settings.
+- Inside a git repo, use `git rev-parse --show-toplevel` to obtain its absolute path. Ask if the settings are for that repo or for the machine default (`*`). Outside a repo, use `*`.
+- Run `python3 init_db.py detect` to find harness binaries on `PATH` and list existing user skills directories, including `~/.claude/skills`, `~/.codex/skills`, `~/.omp/agent/skills`, `~/.commandcode/skills` and `~/.agents/skills`. Offer only harnesses with binaries on `PATH`. On macOS a Homebrew-installed harness is detected when its bin directory is on `PATH`.
 
 ## 2. Ask, one role at a time
 
@@ -58,19 +58,19 @@ Tell the owner that `merge` is their standing OK for agents to merge in that sco
 
 ## 3. Write
 
-One call per role:
+From this skill's directory, replace the example values and run one call per role. Quote `'*'` when setting the machine default.
 
-```powershell
-python <this dir>/init_db.py set <repo|*> <role> <harness> <model|-> <effort|-> <orca|headless>
+```sh
+python3 init_db.py set '*' worker codex - - orca
 ```
 
 and one for the settings:
 
-```powershell
-python <this dir>/init_db.py settings <repo|*> <ask|review|merge> <pr|local>
+```sh
+python3 init_db.py settings '*' review pr
 ```
 
-Then `python <this dir>/init_db.py show <repo>` and read the rows back to the owner.
+Run `python3 init_db.py show` (or pass the repo path after `show`) and read the rows back to the owner.
 
 ## 4. Done
 

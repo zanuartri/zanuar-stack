@@ -72,8 +72,10 @@ Both read the same `.claude-plugin/` manifests, which point at `skills/`. A new 
 ### Everything else (skills.sh, manual updates)
 
 ```sh
-npx skills@latest add zanuartri/zanuar-stack -g -a <agent>
+npx skills@latest add zanuartri/zanuar-stack -g -a pi
 ```
+
+Replace `pi` with the agent ID from the table.
 
 | agent | `-a` id | lands in |
 |---|---|---|
@@ -87,14 +89,18 @@ Take every skill, including `setup-zanuar-stack`. Update with `npx skills@latest
 
 skills.sh has no omp target. Copy the folders into omp's skills dir, `~/.omp/agent/skills`:
 
-```powershell
-git clone https://github.com/zanuartri/zanuar-stack $env:TEMP\zanuar-stack
-Copy-Item -Recurse -Force $env:TEMP\zanuar-stack\skills\* $HOME\.omp\agent\skills\
+```sh
+git clone https://github.com/zanuartri/zanuar-stack "${TMPDIR:-/tmp}/zanuar-stack"
+mkdir -p "$HOME/.omp/agent/skills"
+cp -R "${TMPDIR:-/tmp}/zanuar-stack/skills/." "$HOME/.omp/agent/skills/"
 ```
 
-```sh
-git clone https://github.com/zanuartri/zanuar-stack /tmp/zanuar-stack
-cp -r /tmp/zanuar-stack/skills/* ~/.omp/agent/skills/
+On Windows PowerShell:
+
+```powershell
+git clone https://github.com/zanuartri/zanuar-stack $env:TEMP\zanuar-stack
+New-Item -ItemType Directory -Force $HOME\.omp\agent\skills
+Copy-Item -Recurse -Force $env:TEMP\zanuar-stack\skills\* $HOME\.omp\agent\skills\
 ```
 
 Pull and copy again to update.

@@ -20,36 +20,46 @@ Skill names below are this pack's: `orchestrator`, `manager`, `worker`, `reviewe
 Start one manager per repo and keep it open so later briefs reuse it:
 
 ```sh
-orca worktree ps --json      # find the repo's row; copy its worktreeId
+orca worktree ps --json      # find the repo's row; set worktree_id from worktreeId
 orca orchestration worker-start --keep-open \
-  --worktree id:<repoId>::<abs path> \
-  --agent <harness> --model <model> --effort <effort> \
-  --task-title "manager: <repo>" \
-  --spec-file brief-<repo>.md
+  --worktree "id:$worktree_id" \
+  --agent "$harness" --model "$model" --effort "$effort" \
+  --task-title "manager: $repo" \
+  --spec-file "$brief_file"
 ```
 
 Pass the row's `worktreeId` as `id:<worktreeId>` (it already has the form `<repoId>::<abs path>`). `path:<abs>` can fail to match even for a correct path, so don't rely on it. Don't combine `--worktree` with `--repo`, `--name` or `--base-branch`: those only apply when creating a worktree (`new-child`, `new-top-level`), and `current` means the caller's own worktree, not the repo's.
 
-On Windows give paths in native form, `C:/code/app` or `C:\code\app`, never Git Bash's `/c/code/app`: Orca resolves them itself and the POSIX form doesn't exist for it. This applies to `--spec-file`, `--repo path:` and anything else passed to `worker-start`.
+Pass native paths to Orca, including for `--spec-file` and `--repo path:`. In Git Bash, convert paths for the Windows Orca executable with `cygpath -am "$repo"`.
 
 `--model` / `--effort` work only for agents Orca can configure: Claude, Codex, Cursor, Antigravity, Grok, Muse, OMP (model selector; effort = thinking level) and Pi. Other agents (e.g. commandcode) ignore them and use the model from their own config, so drop both flags for those.
 
 Before starting, check for a live one with `orca orchestration worker-list` (or `task-list`). If the repo already has a kept-open manager, send the brief to it instead:
 
 ```sh
-orca orchestration send --to dispatch:<id> --subject "brief S-12" --body-file brief-<repo>.md
+orca orchestration send --to "dispatch:$manager_dispatch" --subject "brief S-12" --body-file brief-S-12.md --json
 ```
 
 The orchestrator waits with `orca orchestration check` (Orca wakes it on new mail). `check` takes no `--from`: it reads the calling session's own mailbox (`--terminal <handle>` only to read another). It answers with `orca orchestration reply --id <message_id> --body "…"`.
+
+### Track the current dispatch
+
+A send that starts a follow-up gives it a new dispatch ID. The sender reads the receipt and replaces the previous dispatch on all unfinished tickets owned by that manager, including tickets from earlier stories. A queued message on the current dispatch needs no update. Use the actual IDs from Orca, without the `dispatch:` prefix:
+
+```sh
+python3 skills/setup-zanuar-stack/tq.py sql "UPDATE tickets SET manager_dispatch=? WHERE manager_dispatch=? AND status<>'done'" "$new_dispatch" "$manager_dispatch"
+```
+
+The manager also refreshes its own tickets from its active preamble on entry to a follow-up, including when woken by the PR watcher. For a new worker follow-up, use the receipt's new worker dispatch ID for `worker-show` and further messages.
 
 ## Manager → worker (mode `orca`)
 
 ```sh
 orca orchestration worker-start \
-  --repo path:<repo> --worktree new-child --name t-<id> --base-branch <base> \
-  --agent <worker harness> --model <model> --effort <effort> \
-  --task-title "T-<id> <title>" \
-  --spec "You are the worker for ticket <id> in ~/.orca/tickets/tickets.db. Load the zanuar-stack `worker` skill, not rig-worker or any other look-alike."
+  --repo "path:$repo" --worktree new-child --name "t-$ticket_id" --base-branch "$base" \
+  --agent "$worker_harness" --model "$model" --effort "$effort" \
+  --task-title "T-$ticket_id $title" \
+  --spec "You are the worker for ticket $ticket_id in ~/.orca/tickets/tickets.db. Load the zanuar-stack worker skill."
 ```
 
 The worker reports with `orca orchestration send --type worker_done …` and asks with `orca orchestration ask …`; the manager receives both through `check`. `worker-read` shows bounded output when a worker goes quiet. Steer with `send --to dispatch:<id>`, stop with `worker-stop`.
@@ -65,20 +75,20 @@ The worker reports with `orca orchestration send --type worker_done …` and ask
 For `mode = headless` (the reviewer's default), the manager makes the worktree itself and runs the harness non-interactively in it:
 
 ```sh
-git -C <repo> worktree add ../wt/t-<id> -b t/<id>-<slug> <base>   # workers only; reviewers reuse the worker's tree
-cd ../wt/t-<id>
+git -C "$repo" worktree add "$worktree" -b "t/$ticket_id-$slug" "$base"
+cd "$worktree"
 ```
 
 | harness | one-shot command |
 |---|---|
-| claude | `claude -p "<prompt>" --model <model>` |
-| codex | `codex exec "<prompt>"` (add `-m <model>`) |
-| omp | `omp -p "<prompt>"` |
-| commandcode | `commandcode -p "<prompt>" --yolo --max-turns 24` |
+| claude | `claude -p "$prompt" --model "$model"` |
+| codex | `codex exec "$prompt"` (add `-m "$model"`) |
+| omp | `omp -p "$prompt"` |
+| commandcode | `commandcode -p "$prompt" --yolo --max-turns 24` |
 
 Flags differ per harness and version; check its `--help`. Run it as a background command so the manager is woken when it exits, and read the verdict or report from its final output. Record the run in `runs` with `mode='headless'`.
 
-Remove a headless worktree after its PR merges: `git -C <repo> worktree remove ../wt/t-<id>`.
+Remove a headless worktree after its PR merges with `git -C "$repo" worktree remove "$worktree"`.
 
 ## Retries and quiet workers
 
@@ -93,6 +103,6 @@ Remove a headless worktree after its PR merges: `git -C <repo> worktree remove .
 
 ## Watching PRs
 
-Default: the local watcher in `skills/watch-pr/pr_watch.py`. It needs only `gh` and Python, polls GitHub with one GraphQL call per tick for every open ticket PR, and wakes the owning manager with `orca orchestration send --to dispatch:<tickets.manager_dispatch>` only when something changed. See `skills/watch-pr`.
+Default: the local watcher in `skills/watch-pr/pr_watch.py`. It uses Python, `gh` and Orca, and reads the current `tickets.manager_dispatch` every tick. On Linux it defaults to `orca-ide` to avoid invoking the GNOME screen reader. Set `ORCA_CLI_COMMAND` when the Orca executable has another name. See `skills/watch-pr`.
 
 Optional, with Orca Cloud: `orca automations create` with a trigger on the PR's `github.*` events that messages the owning session. Remove it when the PR is ready (`orca automations remove`).

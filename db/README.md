@@ -1,85 +1,67 @@
 # Ticket database
 
-All shared state lives in one SQLite file: `~/.orca/tickets/tickets.db`.
-Agents read and write it with Python's stdlib `sqlite3`, because the `sqlite3` CLI is often missing.
-The schema is in [`skills/setup-zanuar-stack/schema.sql`](../skills/setup-zanuar-stack/schema.sql), shipped inside the setup skill so every install route carries it.
+The shared SQLite database defaults to `~/.orca/tickets/tickets.db`. Use `ZANUAR_DB` to select a different file. Use a consistent absolute path with forward slashes for each ticket's `repo` key.
 
-| table | holds |
+| Table | Contents |
 |---|---|
-| `stories` | cross-repo features (`S-12 Link expiry`) |
-| `tickets` | one unit of work in one repo: goal, acceptance, verify, scope, status, branch, PR, timestamps, `fix_rounds`, optional `autonomy`/`land` overrides, `manager_dispatch`, `depends_on` |
-| `repo_settings` | `autonomy` (`ask`/`review`/`merge`) and `land` (`pr`/`local`) per repo (`repo='*'` is the machine default) |
-| `pr_watch` | last seen state of each watched PR, written by `skills/watch-pr/pr_watch.py` |
-| `runs` | every agent run on a ticket: role, harness, model, effort, mode, result |
-| `repo_config` | who plays which role in a repo (`repo='*'` is the machine default) |
-| `decisions` | optional decision trail (see `skills/decision-log`) |
+| `stories` | Cross-repo goals |
+| `tickets` | Scope, acceptance, verification, status, branch, PR, policy overrides, manager dispatch and dependencies |
+| `runs` | Worker, manager and reviewer attempts and results |
+| `repo_config` | Harness, model, effort and mode per role |
+| `repo_settings` | Autonomy and landing policy |
+| `decisions` | Evidence for decisions made during a ticket |
+| `pr_watch` | Last seen PR state, owned by the watcher |
 
-Statuses: `todo → in-progress → review → done`, with `needs-you` (waiting on the owner) and `blocked` (stuck on something outside the agent's control).
+## Initialize and query
 
-`repo` is always the repo's absolute path with forward slashes: `C:/code/app`, `/home/me/app`. One spelling, so every agent's queries match.
-
-## Easiest: tq.py
+From the zanuar-stack checkout, run:
 
 ```sh
-python skills/setup-zanuar-stack/tq.py sql "SELECT id,title,status FROM tickets WHERE repo=?" C:/code/app
+python3 skills/setup-zanuar-stack/init_db.py
+python3 skills/setup-zanuar-stack/init_db.py set '*' worker codex - - orca
+python3 skills/setup-zanuar-stack/init_db.py show
 ```
 
-Values go in as parameters (`-` for NULL), so nothing needs quoting. The one-liners below do the same by hand.
-
-## Create
-
-Run `/setup-zanuar-stack` once: it creates the db and asks who plays each role. By hand (on Windows use PowerShell, not Git Bash's `python` shim):
+Pass values as parameters to `tq.py`. SELECT returns one JSON object per line. INSERT returns the row ID, and other writes return the changed row count. Positional parameters are strings, with `-` representing SQL NULL.
 
 ```sh
-python skills/setup-zanuar-stack/init_db.py                     # create, idempotent
-python skills/setup-zanuar-stack/init_db.py set '*' worker <harness> <model|-> <effort|-> orca
-python skills/setup-zanuar-stack/init_db.py show
+tq=skills/setup-zanuar-stack/tq.py
+repo=$(git rev-parse --show-toplevel)
+
+# Roles for this repo, then machine defaults
+python3 "$tq" sql "SELECT * FROM repo_config WHERE repo IN (?, '*') ORDER BY repo='*', role" "$repo"
+
+# Open tickets and one ticket in full
+python3 "$tq" sql "SELECT id,story,title,status,branch,fix_rounds FROM tickets WHERE repo=? AND status<>'done'" "$repo"
+python3 "$tq" sql "SELECT * FROM tickets WHERE id=?" 12
+
+# Move to review and count a fix round
+python3 "$tq" sql "UPDATE tickets SET status='review', review_at=datetime('now') WHERE id=?" 12
+python3 "$tq" sql "UPDATE tickets SET fix_rounds=fix_rounds+1 WHERE id=?" 12
+
+# Start and end a run (replace the example run ID with the returned ID)
+python3 "$tq" sql "INSERT INTO runs(ticket,role,harness,model,effort,mode) VALUES (?,?,?,?,?,?)" 12 worker codex - - orca
+python3 "$tq" sql "UPDATE runs SET ended=datetime('now'), result=? WHERE id=?" done 42
+
+# Story board
+python3 "$tq" sql "SELECT repo,id,title,status,pr_url FROM tickets WHERE story=? ORDER BY repo,id" S-12
 ```
 
-## Query templates
+## Multiline SQL and parameters
 
-Each one-liner opens the db, runs one statement, prints rows, commits. Replace the `<…>` values.
-A tiny helper keeps them short; define it once per shell if you like:
+Save the statement as UTF-8 `new-ticket.sql`:
+
+```sql
+INSERT INTO tickets(repo, story, title, goal, acceptance, verify, scope)
+VALUES (?, ?, ?, ?, ?, ?, ?)
+```
+
+Save the values in order as a UTF-8 JSON array in `ticket.json`. Use `null` for SQL NULL and `\n` for line breaks within a value. Named SQLite placeholders also accept a JSON object.
 
 ```sh
-DB='import sqlite3,os,sys;c=sqlite3.connect(os.path.expanduser("~/.orca/tickets/tickets.db"));c.row_factory=sqlite3.Row'
+python3 "$tq" --file new-ticket.sql --params-file ticket.json
+python3 "$tq" --file - --params-file ticket.json < new-ticket.sql
+python3 "$tq" --file new-ticket.sql --params-file - < ticket.json
 ```
 
-```sh
-# config for a repo (repo row wins over '*')
-python -c "$DB;[print(dict(r)) for r in c.execute('SELECT * FROM repo_config WHERE repo IN (?,\"*\") ORDER BY repo=\"*\"',(sys.argv[1],))]" <repo>
-
-# new ticket, prints its id
-python -c "$DB;cur=c.execute('INSERT INTO tickets(repo,story,title,goal,acceptance,verify,scope) VALUES (?,?,?,?,?,?,?)',sys.argv[1:8]);c.commit();print(cur.lastrowid)" <repo> <story> "<title>" "<goal>" "<acceptance>" "<verify>" "<scope>"
-
-# open tickets in a repo
-python -c "$DB;[print(dict(r)) for r in c.execute('SELECT id,story,title,status,branch,fix_rounds FROM tickets WHERE repo=? AND status<>\"done\"',(sys.argv[1],))]" <repo>
-
-# one ticket in full
-python -c "$DB;print(dict(c.execute('SELECT * FROM tickets WHERE id=?',(sys.argv[1],)).fetchone()))" <id>
-
-# move status (stamps started/review/done)
-python -c "$DB;s,i=sys.argv[1:3];col={'in-progress':'started_at','review':'review_at','done':'done_at'}.get(s);c.execute('UPDATE tickets SET status=?'+(f',{col}=datetime(\"now\")' if col else '')+' WHERE id=?',(s,i));c.commit()" review <id>
-
-# count a FIX round
-python -c "$DB;c.execute('UPDATE tickets SET fix_rounds=fix_rounds+1 WHERE id=?',(sys.argv[1],));c.commit()" <id>
-
-# start / end a run
-python -c "$DB;cur=c.execute('INSERT INTO runs(ticket,role,harness,model,effort,mode) VALUES (?,?,?,?,?,?)',sys.argv[1:7]);c.commit();print(cur.lastrowid)" <id> worker <harness> <model> <effort> orca
-python -c "$DB;c.execute('UPDATE runs SET ended=datetime(\"now\"),result=? WHERE id=?',sys.argv[1:3]);c.commit()" PASS <run_id>
-
-# story board across repos
-python -c "$DB;[print(dict(r)) for r in c.execute('SELECT repo,id,title,status,pr_url FROM tickets WHERE story=? ORDER BY repo,id',(sys.argv[1],))]" S-12
-```
-
-Pass values as `sys.argv` (never paste them into the SQL string) so quotes in titles can't break or inject anything.
-
-## Windows PowerShell
-
-The `$DB` variable above is a bash convenience. In PowerShell, put the Python in single quotes, use double quotes inside it, and write SQL string literals as doubled single quotes (`''done''`):
-
-```powershell
-python -c 'import sqlite3,os,sys;c=sqlite3.connect(os.path.expanduser("~/.orca/tickets/tickets.db"));[print(r) for r in c.execute("SELECT id,title,status FROM tickets WHERE repo=? AND status<>''done''",(sys.argv[1],))]' C:\code\myrepo
-```
-
-Windows PowerShell 5.1 can still mangle embedded double quotes when calling native programs. If a one-liner misbehaves, write it to a `.py` file in a temp dir and run `python q.py <args>` instead.
+The last two examples show alternate input methods for the same insert. Only one input can use stdin per call. On Windows PowerShell, use the first command with both files and replace `python3` with `python` or `py -3` if needed. This avoids passing multiline content and embedded JSON quotes through native command arguments.

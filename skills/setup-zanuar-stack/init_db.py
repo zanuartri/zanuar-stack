@@ -1,12 +1,15 @@
+#!/usr/bin/env python3
 """Create the zanuar-stack ticket db and write repo_config rows.
 
-python init_db.py                         create ~/.orca/tickets/tickets.db (idempotent), print its path
-python init_db.py set <repo> <role> <harness> <model> <effort> <mode>
-python init_db.py show [repo]             print repo_config and repo_settings rows
-python init_db.py settings <repo> <ask|review|merge> <pr|local>   autonomy and land for a repo (or *)
+python3 init_db.py                         create ~/.orca/tickets/tickets.db (idempotent), print its path
+python3 init_db.py detect                  list harness binaries and existing skills directories
+python3 init_db.py set <repo> <role> <harness> <model> <effort> <mode>
+python3 init_db.py show [repo]             print repo_config and repo_settings rows
+python3 init_db.py settings <repo> <ask|review|merge> <pr|local>   autonomy and land for a repo (or *)
 Use - for a model/effort the harness doesn't take (PowerShell 5.1 drops "" arguments).
 """
-import os, sqlite3, sys
+import os, shutil, sqlite3, sys
+from pathlib import Path
 
 DB = os.path.expanduser(os.environ.get("ZANUAR_DB", "~/.orca/tickets/tickets.db"))
 SCHEMA = os.path.join(os.path.dirname(os.path.abspath(__file__)), "schema.sql")
@@ -20,7 +23,7 @@ TICKET_COLUMNS = {
 
 
 def connect():
-    os.makedirs(os.path.dirname(DB), exist_ok=True)
+    Path(DB).parent.mkdir(parents=True, exist_ok=True)
     c = sqlite3.connect(DB)
     with open(SCHEMA, encoding="utf-8") as f:
         c.executescript(f.read())
@@ -31,7 +34,21 @@ def connect():
     return c
 
 
+def detect():
+    for harness in ("claude", "codex", "omp", "commandcode", "opencode", "pi"):
+        if binary := shutil.which(harness):
+            print(f"{harness}: {binary}")
+    for entry in ("~/.claude/skills", "~/.codex/skills", "~/.omp/agent/skills",
+                  "~/.commandcode/skills", "~/.config/opencode/skills", "~/.agents/skills"):
+        path = Path(entry).expanduser()
+        if path.is_dir():
+            print(f"skills: {path}")
+
+
 def main(argv):
+    if argv == ["detect"]:
+        detect()
+        return
     c = connect()
     if argv[:1] == ["set"] and len(argv) == 7:
         _, repo, role, harness, model, effort, mode = argv
