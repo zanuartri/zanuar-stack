@@ -77,6 +77,7 @@ For a [new project or repo](skills/orchestrator/SKILL.md#new-project-or-repo), i
 | [`make-verify`](skills/make-verify/SKILL.md) | repo-local recipe to launch the app and prove a feature (optional) |
 | [`design-handoff`](skills/design-handoff/SKILL.md) | shared format for design requests and implementation briefs |
 | [`decision-log`](skills/decision-log/SKILL.md) | auditable trail in the db or a TSV |
+| [`retro`](skills/retro/SKILL.md) | find recurring delivery problems and propose fixes backed by past incidents |
 | [`setup-zanuar-stack`](skills/setup-zanuar-stack/SKILL.md) | run once: ticket db + who plays each role |
 | [`adopt`](skills/adopt/SKILL.md) | take over a PR or branch, keep credit |
 | [`open-pr`](skills/open-pr/SKILL.md) | short, readable PRs |
@@ -176,6 +177,7 @@ Adapted, in our own words, from:
 | `ripple-check` | `blast-radius` | Poteto's pstack |
 | `comment-sweep` | `no-comments` | Poteto's pstack |
 | `make-verify` | `create-verification-skill`, `maintain-verification-skill` | Poteto's pstack |
+| `retro` | [`retro`](https://github.com/mattpocock/skills/tree/main/skills/engineering/retro), [`reflect`](https://github.com/cursor/plugins/tree/main/pstack/skills/reflect), [`correct`](https://github.com/cursor/plugins/tree/main/pstack/skills/correct) | Matt Pocock and Poteto's pstack |
 | `adopt` | `takeover` | [t3dotgg/tstack](https://github.com/t3dotgg/tstack) |
 | `open-pr` | `file-pr` | t3dotgg/tstack |
 | `watch-pr` | `babysit-pr` | t3dotgg/tstack |

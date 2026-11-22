@@ -11,6 +11,8 @@ Skills named here are zanuar-stack's (`orchestrator`, `manager`, `worker`, `revi
 
 State lives in the ticket db (`db/README.md`, default `~/.orca/tickets/tickets.db`). Spawning and messaging go through your harness adapter (`adapters/orca/README.md` for Orca).
 
+Run [retro](../retro/SKILL.md) when the owner requests one or on a schedule the owner sets.
+
 ## Lite mode
 
 If the owner chooses lite or the configured DB is absent (`ZANUAR_DB` or the default above), keep the story, contracts, dependencies and status in chat and briefs. Pass the mode and the agreed launch and base settings to each manager. Keep the same interview and reporting loop and skip all DB reads and writes, including story rows and dispatch tracking.
