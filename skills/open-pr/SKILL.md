@@ -17,3 +17,21 @@ description: Open a short, readable pull request for a finished ticket branch. U
 8. Save `pr_url` on the ticket. Continue with **watch-pr** if asked.
 
 Don't add follow-up comments unless they serve the request; use **pr-comments** when you do.
+
+## Non-interactive push
+
+Use an already authenticated `gh` session for the GitHub HTTPS remote. Clear configured Git credential helpers for this invocation so headless pushes cannot wait for Git Credential Manager:
+
+```sh
+branch=$(git branch --show-current)
+GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push -u origin "$branch"
+```
+
+On PowerShell, set the same variables in a temporary shell:
+
+```powershell
+$branch = git branch --show-current
+$env:GIT_TERMINAL_PROMPT = '0'
+$env:GCM_INTERACTIVE = 'never'
+git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push -u origin $branch
+```

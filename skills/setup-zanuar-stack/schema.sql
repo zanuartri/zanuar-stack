@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS stories (
 
 CREATE TABLE IF NOT EXISTS tickets (
   id         INTEGER PRIMARY KEY AUTOINCREMENT,
-  repo       TEXT NOT NULL,        -- the repo's absolute path, forward slashes: C:/code/app
+  repo       TEXT NOT NULL,        -- the repo's absolute path with forward slashes
   story      TEXT REFERENCES stories(id),
   title      TEXT NOT NULL,
   goal       TEXT,

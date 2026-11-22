@@ -1,7 +1,8 @@
+#!/usr/bin/env python3
 """Local PR watcher: one process per machine, polls GitHub, mails the owning manager on change.
 
-python pr_watch.py              run until no open PR remains (second copy exits at once)
-python pr_watch.py --self-test  check the diff logic, no network
+python3 pr_watch.py              run until no open PR remains (second copy exits at once)
+python3 pr_watch.py --self-test  check the diff logic, no network
 
 Needs Python stdlib, `gh` (logged in) and `orca`. Reads tickets with pr_url from the ticket db,
 fetches every PR in one `gh api graphql` call per tick, and sends one
@@ -69,7 +70,10 @@ def gh_query(prs):
     parts = [f'p{i}: repository(owner:{json.dumps(o)}, name:{json.dumps(n)}){{pullRequest(number:{num}){{{PR_FIELDS}}}}}'
              for i, (o, n, num) in enumerate(prs)]
     q = "query{viewer{login} rateLimit{remaining resetAt} " + " ".join(parts) + "}"
-    out = subprocess.run([shutil.which("gh") or "gh", "api", "graphql", "-f", f"query={q}"],
+    gh = shutil.which("gh")
+    if not gh:
+        sys.exit("pr_watch: gh not found on PATH")
+    out = subprocess.run([gh, "api", "graphql", "-f", f"query={q}"],
                          capture_output=True, text=True, encoding="utf-8")
     if out.returncode:
         raise RuntimeError(out.stderr.strip()[:300])
@@ -78,6 +82,7 @@ def gh_query(prs):
 
 def lock(path):
     f = open(path, "a+")
+    f.seek(0)
     try:
         if os.name == "nt":
             import msvcrt
@@ -92,9 +97,12 @@ def lock(path):
 
 def run():
     from init_db import DB, connect
-    _lock = lock(os.path.join(os.path.dirname(DB), "pr_watch.lock"))
+    db_dir = os.path.dirname(os.path.abspath(DB))
+    os.makedirs(db_dir, exist_ok=True)
+    _lock = lock(os.path.join(db_dir, "pr_watch.lock"))
     c = connect()
-    orca = shutil.which("orca") or "orca"
+    default_orca = "orca-ide" if sys.platform.startswith("linux") else "orca"
+    orca = shutil.which(os.environ.get("ORCA_CLI_COMMAND") or default_orca)
     interval = FAST
     while True:
         rows = c.execute("SELECT t.pr_url, t.manager_dispatch, w.snapshot, w.updated_at FROM tickets t "
@@ -121,9 +129,11 @@ def run():
             if events:
                 subject = f"PR {m[2]}#{m[3]}: {', '.join(events)}"
                 body = f"{url}\n{facts(new)}"
-                if dispatch:
+                if dispatch and orca:
                     subprocess.run([orca, "orchestration", "send", "--to", f"dispatch:{dispatch}",
                                     "--subject", subject, "--body", body])
+                elif dispatch:
+                    print("pr_watch: Orca CLI not found; set ORCA_CLI_COMMAND", file=sys.stderr)
                 print(subject)
             if events or old is None:
                 c.execute("INSERT OR REPLACE INTO pr_watch VALUES (?,?,datetime('now'))", (url, json.dumps(new)))

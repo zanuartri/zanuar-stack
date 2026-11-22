@@ -14,6 +14,7 @@ Skills named here are zanuar-stack's (`orchestrator`, `manager`, `worker`, `revi
 3. Check that:
    - every acceptance line is actually met
    - the verify commands pass when *you* run them
+   - if the result depends on locale or timezone, reproduce with explicit `LC_ALL`, `LANG` and `TZ` and report which values CI should pin
    - nothing breaks outside the diff: callers, edge cases, error paths (**ripple-check** for risky changes)
    - scope held: no unrelated edits, debug leftovers or secrets
    - **comment-sweep** was done: no narration, stale comments or comments excusing a workaround
