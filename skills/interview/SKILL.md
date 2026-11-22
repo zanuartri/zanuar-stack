@@ -8,10 +8,19 @@ description: Before starting any feature or non-trivial change, interview the ow
 Nothing gets planned until you and the owner agree on what "done" means.
 
 ## How to ask
-- **One question per message.** Wait for the answer before the next one.
-- Multiple choice, 2–4 options, your **recommended option first** with one line on why. The owner can always answer in their own words.
+- **One question per ask.** Wait for the answer before the next one.
+- Multiple choice, 2–4 options, your **recommended option first**, labelled `(Recommended)`, with one line on why. The owner can always answer in their own words.
 - Each question stands alone: state the context and the trade-off, not just "A or B?".
-- Use the harness's question tool if it has one; otherwise a short numbered list. (Orca workers: `orca orchestration ask`.)
+- **Always use the harness's interactive question tool**, so the owner answers with one click:
+
+  | where you run | tool |
+  |---|---|
+  | Claude Code | `AskUserQuestion` |
+  | Codex and other harnesses | that harness's built-in question/ask tool |
+  | Orca bot | `orca bot item set <n> --status needs-you --comment "<context>" --ask "<question>?" --option "<label> \| <detail>" … --recommended <n>` |
+  | Orca worker | `orca orchestration ask --from <your session> --question "…"` (put the options in the question) |
+
+  Fall back to a short numbered list in chat only when the harness has no such tool.
 
 ## What to settle, in order
 1. **Goal**: the problem and who it's for.

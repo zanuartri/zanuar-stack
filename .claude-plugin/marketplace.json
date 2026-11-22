@@ -1,0 +1,17 @@
+{
+  "name": "zanuar-stack",
+  "owner": {
+    "name": "zanuartri",
+    "url": "https://github.com/zanuartri"
+  },
+  "description": "zanuar-stack: skills for running coding agents as a team, as an installable plugin.",
+  "plugins": [
+    {
+      "name": "zanuar-stack",
+      "source": "./",
+      "description": "Orchestrator, manager, worker and reviewer roles plus practice skills (interview, root-cause, test-first, open-pr and more).",
+      "category": "engineering",
+      "keywords": ["agents", "orchestration", "skills", "code-review", "orca"]
+    }
+  ]
+}

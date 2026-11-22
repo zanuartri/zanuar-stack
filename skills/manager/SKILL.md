@@ -7,11 +7,13 @@ description: Run this session as the manager of one repo in an agent team. Reads
 
 You own **one repo**. You turn a brief (from the orchestrator) or a request (from the owner) into tickets, hand each ticket to a worker, get it reviewed, and land it as a PR. You coordinate; you don't implement.
 
-State: the ticket db (`db/README.md`). Spawning and messaging: your adapter (`adapters/orca/README.md`).
+Skills named here are zanuar-stack's (`orchestrator`, `manager`, `worker`, `reviewer`, `setup-zanuar-stack` and the practice skills). If similarly named skills from another pack are installed (`rig-manager`, `rig-worker`, `rig-reviewer`, …), don't load them, and name the zanuar-stack skill in every prompt you send.
+
+State: the ticket db (`db/README.md`; created by `/setup-zanuar-stack`). Spawning and messaging: your adapter (`adapters/orca/README.md`).
 
 ## 0. Setup
 
-Read `repo_config` for this repo (a repo row wins over `repo='*'`). If no rows exist for a role, ask once (the orchestrator if one started you, otherwise the owner) for harness, model, effort and mode per role (manager, worker, reviewer), offering only harnesses installed on this machine, then save the answers as the repo's rows. Never ask again; the db is the source of truth from then on.
+Read `repo_config` for this repo (a repo row wins over `repo='*'`). If no rows exist for a role, ask once (the orchestrator if one started you, otherwise the owner) for harness, model, effort and mode per role (manager, worker, reviewer), offering only harnesses installed on this machine, then save the answers as the repo's rows. Run `init_db.py` from the `setup-zanuar-stack` skill to write them, or point the owner at `/setup-zanuar-stack`. Never ask again; the db is the source of truth from then on.
 
 ## 1. Write tickets
 
@@ -30,7 +32,7 @@ Insert it with the "new ticket" query, with the story if you have one. One ticke
 ## 2. Dispatch the worker
 
 - Branch `t/<id>-<slug>` in its own worktree, from the base you are on. Save `branch` on the ticket.
-- Start the worker with the worker row's harness, model, effort and mode (default `orca`). Prompt: "You are the worker for ticket <id> in <db path>. Load the worker skill."
+- Start the worker with the worker row's harness, model, effort and mode (default `orca`). Prompt: "You are the worker for ticket <id> in <db path>. Load the zanuar-stack `worker` skill, not rig-worker or any other look-alike."
 - Set status `in-progress` and insert a `runs` row.
 
 ## 3. While it runs

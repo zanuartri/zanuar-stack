@@ -39,6 +39,7 @@ Shared state is one SQLite file, `~/.orca/tickets/tickets.db` (see [`db/`](db/RE
 | [`test-first`](skills/test-first/SKILL.md) | failing regression test, then fix |
 | [`ripple-check`](skills/ripple-check/SKILL.md) | what breaks outside the diff, proven |
 | [`decision-log`](skills/decision-log/SKILL.md) | auditable trail in the db or a TSV |
+| [`setup-zanuar-stack`](skills/setup-zanuar-stack/SKILL.md) | run once: ticket db + who plays each role |
 | [`adopt`](skills/adopt/SKILL.md) | take over a PR or branch, keep credit |
 | [`open-pr`](skills/open-pr/SKILL.md) | short, readable PRs |
 | [`watch-pr`](skills/watch-pr/SKILL.md) | own a PR through CI and review |
@@ -46,17 +47,59 @@ Shared state is one SQLite file, `~/.orca/tickets/tickets.db` (see [`db/`](db/RE
 
 Harness wiring: [`adapters/orca`](adapters/orca/README.md).
 
-## Install
+## Installation
 
-Copy the skill folders into your agent's skills directory:
+Pick **one** route per agent. A plugin updates itself; skills.sh and manual copies are files you own and update by hand. Installing both gives you every skill twice.
+
+### Claude Code (plugin, updates itself)
 
 ```sh
-# Claude Code (user-wide)
-cp -r skills/* ~/.claude/skills/
-# other harnesses: copy skills/* into their skills dir
+claude plugin marketplace add zanuartri/zanuar-stack
+claude plugin install zanuar-stack@zanuar-stack
 ```
 
-Create the db with the commands in [`db/README.md`](db/README.md). Then start a session with the `orchestrator` skill (several repos) or the `manager` skill (one repo).
+### Codex (plugin, updates at startup)
+
+```sh
+codex plugin marketplace add zanuartri/zanuar-stack
+codex plugin add zanuar-stack@zanuar-stack
+```
+
+Both read the same `.claude-plugin/` manifests, which point at `skills/`. A new release reaches users when `version` in `.claude-plugin/plugin.json` changes.
+
+### Everything else (skills.sh, manual updates)
+
+```sh
+npx skills@latest add zanuartri/zanuar-stack -g -a <agent>
+```
+
+| agent | `-a` id | lands in |
+|---|---|---|
+| OpenCode | `opencode` | `~/.config/opencode/skills` |
+| Pi | `pi` | `~/.agents/skills` |
+| Command Code | `command-code` | `~/.commandcode/skills` |
+
+Take every skill, including `setup-zanuar-stack`. Update with `npx skills@latest update -g`, and re-run `add` to pick up new skills. `-a '*'` or omitting `-a` covers any other agent skills.sh knows.
+
+### oh-my-pi (omp): manual copy
+
+skills.sh has no omp target. Copy the folders into omp's skills dir, `~/.omp/agent/skills`:
+
+```powershell
+git clone https://github.com/zanuartri/zanuar-stack $env:TEMP\zanuar-stack
+Copy-Item -Recurse -Force $env:TEMP\zanuar-stack\skills\* $HOME\.omp\agent\skills\
+```
+
+```sh
+git clone https://github.com/zanuartri/zanuar-stack /tmp/zanuar-stack
+cp -r /tmp/zanuar-stack/skills/* ~/.omp/agent/skills/
+```
+
+Pull and copy again to update.
+
+### Then, once per machine
+
+Run **`/setup-zanuar-stack`**. It creates `~/.orca/tickets/tickets.db`, finds the harnesses you have, and asks who plays manager, worker and reviewer (harness, model, effort, mode). Then start a session with the `orchestrator` skill (several repos) or the `manager` skill (one repo).
 
 ## Credits
 
