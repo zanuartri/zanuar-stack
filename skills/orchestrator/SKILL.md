@@ -13,7 +13,7 @@ State lives in the ticket db (`db/README.md`, default `~/.orca/tickets/tickets.d
 
 ## 1. Interview first
 
-Use a [design handoff](../design-handoff/SKILL.md) to write the story and briefs, interview only for gaps, and pass its acceptance checks to managers for [UI review](../ui-review/SKILL.md).
+Use a [design handoff](../design-handoff/SKILL.md) to write the story and briefs, interview only for gaps, and carry its acceptance checks into the briefs.
 
 For other feature requests, start with the **interview** skill, even when the request looks clear. Stop when goal, scope, acceptance and non-goals are settled and the owner has confirmed the summary. Facts you can look up (repo paths, current code, open tickets) you look up yourself; only decisions go to the owner.
 

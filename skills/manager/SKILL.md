@@ -62,8 +62,6 @@ Wait for messages. Don't poll, and don't read its screen unless it went quiet or
 
 ## 4. Review loop
 
-When a ticket changes user-facing UI and a design reviewer is available, get a [UI review](../ui-review/SKILL.md) using the [design handoff](../design-handoff/SKILL.md) alongside the code review and resolve any UI findings before landing.
-
 When the worker reports done (status `review`):
 1. **Triage by diffstat only**: `git -C <worktree> diff <base>...HEAD --stat` and the worker's report. Right files? Nothing outside scope? Verify ran and passed? If not, send it back with no reviewer.
 2. Normally start the reviewer in the same worktree for the full diff. Resolve its settings with `tq.py resolve-role <id> reviewer` before each dispatch, using `headless` if mode is unset. For a few lines of docs or config, you may read it yourself. Record the reviewed SHA with the verdict in `runs.result`. The prompt names the zanuar-stack `reviewer` skill and gives it a verdict file (`<scratch>/verdict-<id>.txt`). Read that file even if the run exits zero. No verdict line: retry once, then treat it as a failed run. For cross-repo fixtures, give the reviewer the provider repo path and commit so it can compare `git hash-object` of each shared file.
