@@ -8,7 +8,7 @@ The shared SQLite database defaults to `~/.orca/tickets/tickets.db`. Use `ZANUAR
 | `tickets` | Scope, acceptance, verification, status, branch, PR, policy and role overrides, manager dispatch and dependencies |
 | `runs` | Worker, manager and reviewer attempts and results |
 | `repo_config` | Default harness, model, effort and mode per role |
-| `repo_settings` | Autonomy and landing policy |
+| `repo_settings` | Autonomy, landing policy and integration branch |
 | `decisions` | Evidence for decisions made during a ticket |
 | `pr_watch` | Last seen PR state, owned by the watcher |
 
@@ -47,11 +47,15 @@ python3 "$tq" sql "UPDATE runs SET ended=datetime('now'), result=? WHERE id=?" d
 python3 "$tq" sql "SELECT repo,id,title,status,pr_url FROM tickets WHERE story=? ORDER BY repo,id" S-12
 ```
 
+## Integration branch
+
+`tq.py resolve-base <ticket> <github-default-branch>` uses `tickets.base`, then the repo's own `repo_settings.base`, then the default from `gh repo view --json defaultBranchRef --jq .defaultBranchRef.name`. Set the repo branch with `init_db.py base <repo> <branch>` (use `-` for the GitHub default). For a story or ticket exception, set `tickets.base` on each affected ticket.
+
 ## Per-ticket roles
 
 `tickets.roles` is nullable text containing a JSON object keyed by `worker` or `reviewer`. The manager resolves each field in this order: `ticket.roles` (the ticket's `roles` column) > `repo_config[repo]` > `repo_config['*']`. An absent role, missing field, or JSON null inherits the next available value. Record what actually ran in `runs`.
 
-For example, a ticket can store these overrides:
+Use per-ticket harness and model overrides only when the owner requests them for that ticket or explicitly confirms a proposal. For example, a ticket can store these overrides:
 
 ```json
 {"worker":{"harness":"claude","model":"<model-id>","effort":"high"},"reviewer":{"mode":"headless"}}

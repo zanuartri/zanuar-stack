@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS tickets (
   status     TEXT NOT NULL DEFAULT 'todo'
              CHECK (status IN ('todo','in-progress','review','needs-you','blocked','done')),
   branch     TEXT,
+  base       TEXT,                  -- NULL = use the repo's integration branch
   pr_url     TEXT,
   autonomy   TEXT CHECK (autonomy IN ('ask','review','merge')),  -- NULL = use repo_settings
   land       TEXT CHECK (land IN ('pr','local')),                -- NULL = use repo_settings
@@ -68,7 +69,8 @@ CREATE TABLE IF NOT EXISTS decisions (   -- used by the decision-log skill
 CREATE TABLE IF NOT EXISTS repo_settings (   -- how far agents go alone; repo='*' = machine default
   repo     TEXT PRIMARY KEY,
   autonomy TEXT NOT NULL DEFAULT 'review' CHECK (autonomy IN ('ask','review','merge')),
-  land     TEXT NOT NULL DEFAULT 'pr' CHECK (land IN ('pr','local'))
+  land     TEXT NOT NULL DEFAULT 'pr' CHECK (land IN ('pr','local')),
+  base     TEXT                     -- NULL = use the GitHub default branch
 );
 INSERT OR IGNORE INTO repo_settings(repo) VALUES ('*');
 
