@@ -51,7 +51,7 @@ python3 "$tq" sql "SELECT repo,id,title,status,pr_url FROM tickets WHERE story=?
 
 `tickets.roles` is nullable text containing a JSON object keyed by `worker` or `reviewer`. The manager resolves each field in this order: `ticket.roles` (the ticket's `roles` column) > `repo_config[repo]` > `repo_config['*']`. An absent role, missing field, or JSON null inherits the next available value. Record what actually ran in `runs`.
 
-For example, a ticket can store these overrides:
+Use per-ticket harness and model overrides only when the owner requests them for that ticket or explicitly confirms a proposal. For example, a ticket can store these overrides:
 
 ```json
 {"worker":{"harness":"claude","model":"<model-id>","effort":"high"},"reviewer":{"mode":"headless"}}
