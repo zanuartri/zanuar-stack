@@ -35,13 +35,15 @@ Run db queries with `python3 <setup-zanuar-stack dir>/tq.py sql "<SQL>" [params.
 
 ## Resume after a restart, follow-up or lane escalation
 
-When light escalates to full, use **adopt**. Read the existing ticket (or lite brief), git log and any open PR. Keep the ticket, worktree and branch. The sender updates `tickets.manager_dispatch` in full mode.
+When taking over a PR, branch or session, reconcile the original goal, latest owner instructions, ticket, git log and live PR before continuing. Preserve authorship and credit. Record the handoff in `runs` in full mode. When light escalates to full, keep the same ticket, worktree and branch. The sender updates `tickets.manager_dispatch` in full mode.
 
 Read the existing ticket and `runs` rows for this repo before acting. Match active dispatches with Orca, inspect the ticket worktree's `git status` and `git log`, and read the live PR head, checks, reviews and state with `gh pr view` and `gh pr checks`. If `pr_url` is missing, look up the PR by branch before opening one. Reconcile completed steps and continue at the first unfinished step. Reuse live workers and reviewers. Record the current manager dispatch on all of this manager's unfinished tickets, including tickets from previous stories, and restart the local PR watcher if needed. Reconcile the live PR state even if no watcher message arrived during the restart.
 
 ## 1. Write tickets
 
 If the owner talks to you directly (no orchestrator), run the **interview** skill on any feature or non-trivial request before writing tickets. If an orchestrator started you, never ask the owner directly: look facts up in the code and send decisions to the orchestrator.
+
+For large or hard-to-reverse work, sketch interfaces, state ownership and verification phases before dispatch. Turn thin briefs into tickets grounded in source evidence with concrete acceptance and verification. For long or unattended work, log decisions and results in `decisions` or a TSV in lite mode with time, phase, decision, reason, evidence and result.
 
 A worker knows only its ticket, so every decision goes there, not in chat.
 
@@ -103,7 +105,9 @@ Summarise what changed, verification and risks. Land hosted work through a PR. F
 
 For parallel tickets, fetch and rebase again before merge. Re-review if the rebase changes code. Before opening, marking ready, or merging a PR, compare its head with the reviewed SHA. Send any new or changed code back to the reviewer. For a rebase with an unchanged reviewed diff, record that comparison and the new SHA. If publishing a rebased ticket branch you created, use `--force-with-lease="$push_ref:$previous_remote_sha"` with the remote SHA fetched before rebasing. If the lease fails, inspect the remote changes before proceeding. Verify the new head and wait for its PR checks.
 
-Open the PR with **open-pr** against the resolved base. Save `pr_url` and start `python3 <watch-pr dir>/pr_watch.py` in the background. Apply the FIX transition for CI failures or substantiated PR comments that require changes (at most 2 attempts, then escalate). Check the live PR base before landing. If it differs from the resolved base, reconcile the target and repeat review and checks. With the head reviewed, checks green, no conflict and the merge rule below satisfied, run `gh pr merge --squash`. Set `done` and `done_at` only after confirming the PR merged.
+Look up an existing PR by ticket branch before using `gh pr create --base <base> --head <branch> --title <title> --body-file <file>`. Follow the repo's title convention. In the body, summarize the problem, change, verification and risks. Link the ticket or include the brief in lite mode, and name the writing agent. Check for secrets before posting.
+
+In full mode, save `pr_url` and use **watch-pr** with an active dispatch ID. Otherwise check CI with `gh pr checks`. Apply the FIX transition for CI failures or substantiated PR comments that require changes (at most 2 attempts, then escalate). Check the live PR base before landing. If it differs from the resolved base, reconcile the target and repeat review and checks. With the head reviewed, checks green, no conflict and the merge rule below satisfied, run `gh pr merge --squash`. Set `done` and `done_at` only after confirming the PR merged.
 
 Merge automatically only under `autonomy=merge` into the configured integration branch. The current GitHub default, `main`, `master` and any other production branch always need the owner's explicit OK, as do all other merges outside that automatic rule. The orchestrator may relay approval. Report each merge.
 
@@ -114,8 +118,8 @@ Under `ask`, stop after each ticket and confirm with the owner before dispatchin
 To the orchestrator if one started you (always naming the story), otherwise to the owner: ticket, PR link, verify result, risks, open decisions. Questions for the owner go to the orchestrator first.
 
 ## Rules
-- Never push directly to the base or integration branch. Every change to base goes through a PR. Before any push, set `ticket_branch` from the ticket and `base` to its resolved base, then guard the target `push_ref` with `test -n "$ticket_branch" && test "$ticket_branch" != "$base" && test "$push_ref" = "refs/heads/$ticket_branch" || exit 1`. Push only `HEAD:$push_ref` using **open-pr** credentials.
-- Touch only tickets you created, unless told to take one over (**adopt**).
+- Never push directly to the base or integration branch. Every change to base goes through a PR. Before any push, set `ticket_branch` from the ticket and `base` to its resolved base, then guard the target `push_ref` with `test -n "$ticket_branch" && test "$ticket_branch" != "$base" && test "$push_ref" = "refs/heads/$ticket_branch" || exit 1`. For GitHub HTTPS, use the authenticated `gh` session with `GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push -u origin "HEAD:$push_ref"` (set the environment variables separately in PowerShell).
+- Touch only tickets you created or were asked to take over.
 - Implement nothing yourself unless the owner asks for a small fix.
 - Never force-push or delete branches you didn't create.
 - Report honestly: a failing verify is failing.

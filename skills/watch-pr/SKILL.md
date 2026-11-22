@@ -25,7 +25,7 @@ Without Orca: one blocking `gh pr checks <pr> --watch` in the background, re-run
 
 ## On each wake-up
 1. Read the new state: `gh pr checks <pr>`, `gh pr view <pr> --comments`, review threads.
-2. **Failed check**: read the log, use **craft** to find the root cause, fix on the branch (through the worker if one is still open), and push. After 2 failed attempts, escalate with what you tried.
+2. **Failed check**: read the log, trace the failure to its cause, fix on the branch (through the worker if one is still open), and push. After 2 failed attempts, escalate with what you tried.
 3. **Review comment** (human or bot): fix real issues and explain any feedback you decline. Follow [Writing PR comments](#writing-pr-comments).
 4. **Conflict**: rebase or merge the base into the branch, re-run verify, push.
 5. **ci_passed**: confirm the live PR head has been reviewed and verify required checks and review threads on that head. Apply the **manager** skill's merge approval rule to the live target branch, or report the PR ready for approval.

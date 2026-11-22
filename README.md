@@ -69,16 +69,13 @@ For a [new project or repo](skills/orchestrator/SKILL.md#new-project-or-repo), i
 | practice skills | |
 |---|---|
 | [`interview`](skills/interview/SKILL.md) | one-question-at-a-time requirements interview |
-| [`plan`](skills/plan/SKILL.md) | plan large work, sketch designs and sharpen briefs |
-| [`craft`](skills/craft/SKILL.md) | debug, simplify, write regression tests and sweep comments |
 | [`make-verify`](skills/make-verify/SKILL.md) | repo-local recipe to launch the app and prove a feature (optional) |
 | [`design-handoff`](skills/design-handoff/SKILL.md) | shared format for design requests and implementation briefs |
-| [`decision-log`](skills/decision-log/SKILL.md) | auditable trail in the db or a TSV |
 | [`retro`](skills/retro/SKILL.md) | find recurring delivery problems and propose fixes backed by past incidents |
 | [`setup-zanuar-stack`](skills/setup-zanuar-stack/SKILL.md) | run once: ticket db + who plays each role |
-| [`adopt`](skills/adopt/SKILL.md) | take over a PR or branch, keep credit |
-| [`open-pr`](skills/open-pr/SKILL.md) | short, readable PRs |
 | [`watch-pr`](skills/watch-pr/SKILL.md) | follow CI and review, write attributed PR comments |
+
+Want standalone practice skills (TDD, root cause, planning)? Install Poteto's pstack or Matt Pocock's skills alongside.
 
 Harness wiring: [`adapters/orca`](adapters/orca/README.md).
 
@@ -163,14 +160,12 @@ Adapted, in our own words, from:
 |---|---|---|
 | orchestrator, manager, worker, reviewer | the role split | [herdr-rig](https://github.com/zanuartri/herdr-rig) |
 | `interview` | "grill me" | Matt Pocock |
-| `plan` | `figure-it-out`, `sharpen`, `architect` | Poteto's pstack |
-| `decision-log` | `show-me-your-work` | Poteto's pstack |
-| `craft` | `tdd`, `principle-fix-root-causes`, `principle-subtract-before-you-add`, `no-comments` | Poteto's pstack |
+| `orchestrator`, `manager` | `figure-it-out`, `sharpen`, `architect`, `show-me-your-work` | Poteto's pstack |
+| `worker` | `tdd`, `principle-fix-root-causes`, `principle-subtract-before-you-add`, `no-comments` | Poteto's pstack |
 | `reviewer` | `blast-radius` | Poteto's pstack |
 | `make-verify` | `create-verification-skill`, `maintain-verification-skill` | Poteto's pstack |
 | `retro` | [`retro`](https://github.com/mattpocock/skills/tree/main/skills/engineering/retro), [`reflect`](https://github.com/cursor/plugins/tree/main/pstack/skills/reflect), [`correct`](https://github.com/cursor/plugins/tree/main/pstack/skills/correct) | Matt Pocock and Poteto's pstack |
-| `adopt` | `takeover` | [t3dotgg/tstack](https://github.com/t3dotgg/tstack) |
-| `open-pr` | `file-pr` | t3dotgg/tstack |
+| `orchestrator`, `manager` | `takeover`, `file-pr` | [t3dotgg/tstack](https://github.com/t3dotgg/tstack) |
 | `watch-pr` | `babysit-pr`, `leaving-pr-comments` | t3dotgg/tstack |
 
 Poteto's pstack: [cursor/plugins/pstack](https://github.com/cursor/plugins/tree/main/pstack), mirror [backnotprop/pstack](https://github.com/backnotprop/pstack).

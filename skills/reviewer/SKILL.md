@@ -17,7 +17,7 @@ Skills named here are zanuar-stack's (`orchestrator`, `manager`, `worker`, `revi
    - if the result depends on locale or timezone, reproduce with explicit `LC_ALL`, `LANG` and `TZ` and report which values CI should pin
    - callers, edge cases and error paths still work (see [Beyond the diff](#beyond-the-diff))
    - scope held: no unrelated edits, debug leftovers or secrets
-   - the **craft** comment sweep was done: no narration, stale comments or comments excusing a workaround
+   - the worker swept the diff for narration, stale comments and comments excusing workarounds
    - fixtures shared with another repo are byte-identical: `git hash-object <file>` here equals `git -C <provider path> rev-parse <commit>:<file>` (the manager gives you the path and commit)
    - if the repo has `verify/` and the ticket changes user-facing behavior (or the owner asks), run the matching **make-verify** feature recipe and check its proof; otherwise unit tests, typecheck and lint are enough
 4. Send the verdict as your final message to whoever dispatched you. If the prompt names a verdict file, write the same text there (headless runs read the file):

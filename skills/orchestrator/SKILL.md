@@ -35,7 +35,7 @@ After the interview (when needed), state the lane and reason in one line. The ow
 - **Light** covers one ticket in one repo. Record it in the DB in full mode or keep a text brief in lite mode. Follow the manager skill's ticket, worker, review and PR steps yourself. Dispatch the worker and reviewer directly, open the PR and check CI. Use `gh pr checks` if your session has no dispatch ID for the watcher.
 - **Full** covers several tickets, parallel work, cross-repo work or a long watch until merge. Follow steps 2–5 with one manager per repo.
 
-Every code change needs a separate reviewer in every lane. For direct edits, give the reviewer the scope, base and checks in the prompt. If light grows into full, hand off the existing ticket, worktree and branch to the repo manager and update `tickets.manager_dispatch` in full mode. Have the manager use **adopt** and resume from the ticket, git log and PR if open.
+Every code change needs a separate reviewer in every lane. For direct edits, give the reviewer the scope, base and checks in the prompt. If light grows into full, hand off the existing ticket, worktree and branch to the repo manager and update `tickets.manager_dispatch` in full mode. Have the manager [resume](../manager/SKILL.md#resume-after-a-restart-follow-up-or-lane-escalation) from the ticket, git log and PR if open.
 
 ### New project or repo
 
@@ -67,7 +67,8 @@ Report:     how to reach the orchestrator (adapter command)
 - Write the contract once and paste it verbatim. If two briefs disagree on it, the plan is wrong.
 - Merge order: providers before consumers, config before the code that reads it, migrations before code that needs them.
 - A brief holds only what the manager can't get from the repo. Tickets are the manager's job.
-- For a large or vague story, use **plan** before splitting it into briefs.
+- Before coding a large or hard-to-reverse story, sketch interfaces, data ownership and phases with observable checks. Sharpen thin briefs using source evidence, concrete acceptance checks and verification commands. Keep the agreed scope.
+- For long or unattended work, record decisions and results as you go in the DB's `decisions` table or a TSV in lite mode. Include time, phase, decision, reason, evidence and result.
 
 ## 3. Start or reuse managers
 
@@ -96,6 +97,6 @@ When a manager writes:
 Use the story board query from the db README. Per repo: tickets done, in review or blocked, PR links, verify results. A failing verify is reported as failing.
 
 ## Rules
-- Implement only trivial edits in direct. In light, publish only the ticket branch through **open-pr** and follow the manager's merge rules. In full, managers handle ticket work and landing. Confirmed repo bootstrap follows the steps above.
+- Implement only trivial edits in direct. In light, use the manager's [handoff](../manager/SKILL.md#resume-after-a-restart-follow-up-or-lane-escalation) and [PR procedure](../manager/SKILL.md#5-land) to resume existing work and publish only the ticket branch. In full, managers handle ticket work and landing. Confirmed repo bootstrap follows the steps above.
 - Don't poll. Wait for messages the way your adapter describes.
 - Spend the owner's attention on decisions only.

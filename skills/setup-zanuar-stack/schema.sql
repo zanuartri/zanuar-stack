@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS repo_config (
   PRIMARY KEY (repo, role)
 );
 
-CREATE TABLE IF NOT EXISTS decisions (   -- used by the decision-log skill
+CREATE TABLE IF NOT EXISTS decisions (   -- orchestration and manager decision history
   id       INTEGER PRIMARY KEY AUTOINCREMENT,
   ts       TEXT NOT NULL DEFAULT (datetime('now')),
   ticket   INTEGER REFERENCES tickets(id),
