@@ -29,6 +29,8 @@ Scope:      files/areas expected to change; what must NOT change
 
 Insert it with the "new ticket" query, with the story if you have one. One ticket is what one agent can finish in one session. Tickets that touch the same files run one after another. Ask only what the code can't tell you; **brief** helps sharpen a thin one.
 
+User-facing behavior that tests can't prove: if the repo has no `verify/` map and the owner asks for one, or such tickets keep landing unproven, add a ticket to build it with **make-verify**. Optional; ordinary tickets don't need it.
+
 ## 2. Dispatch the worker
 
 - Branch `t/<id>-<slug>` in its own worktree, from the base you are on. Save `branch` on the ticket.
