@@ -25,6 +25,10 @@ orca orchestration worker-start --keep-open \
   --spec-file brief-<repo>.md
 ```
 
+`--worktree path:<repo>` opens the manager in that repo's existing checkout. Don't combine it with `--repo`, `--name` or `--base-branch`: those only apply when creating a worktree (`new-child`, `new-top-level`), and `current` means the caller's own worktree, not the repo's.
+
+`--model` / `--effort` work only for agents Orca can configure: Claude, Codex, Cursor, Antigravity, Grok, Muse, OMP (model selector; effort = thinking level) and Pi. Other agents (e.g. commandcode) ignore them and use the model from their own config, so drop both flags for those.
+
 Before starting, check for a live one with `orca orchestration worker-list` (or `task-list`). If the repo already has a kept-open manager, send the brief to it instead:
 
 ```sh
