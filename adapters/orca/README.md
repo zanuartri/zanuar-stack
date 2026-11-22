@@ -4,6 +4,8 @@ How the four roles map onto [Orca](https://github.com/stablyai/orca)'s `orca orc
 
 The ticket db stays the source of truth for tickets and runs. Orca carries the sessions and the messages.
 
+See [Working across Orca bots](bots.md) for design handoffs and UI reviews between teams.
+
 Skill names below are this pack's: `orchestrator`, `manager`, `worker`, `reviewer`, `setup-zanuar-stack`. If the harness also has look-alikes from another pack (`rig-manager`, `rig-worker`, `rig-reviewer`, …), spawn prompts must name the zanuar-stack skill and agents must not load the others.
 
 ## Roles at a glance

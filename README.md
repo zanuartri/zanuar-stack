@@ -42,6 +42,7 @@ Shared state is one SQLite file, `~/.orca/tickets/tickets.db` (see [`db/`](db/RE
 | [`ripple-check`](skills/ripple-check/SKILL.md) | what breaks outside the diff, proven |
 | [`comment-sweep`](skills/comment-sweep/SKILL.md) | delete comments that don't earn their place, encode real constraints |
 | [`make-verify`](skills/make-verify/SKILL.md) | repo-local recipe to launch the app and prove a feature (optional) |
+| [`design-handoff`](skills/design-handoff/SKILL.md) | shared format for design requests and implementation briefs |
 | [`decision-log`](skills/decision-log/SKILL.md) | auditable trail in the db or a TSV |
 | [`setup-zanuar-stack`](skills/setup-zanuar-stack/SKILL.md) | run once: ticket db + who plays each role |
 | [`adopt`](skills/adopt/SKILL.md) | take over a PR or branch, keep credit |
