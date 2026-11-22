@@ -9,7 +9,7 @@ disable-model-invocation: true
 Gets the shared state ready that the `orchestrator`, `manager`, `worker` and `reviewer` skills (this pack's, not look-alikes such as `rig-manager`) assume:
 
 - the ticket db at `~/.orca/tickets/tickets.db`, built from [`schema.sql`](schema.sql)
-- `repo_config` sets machine-wide (`repo='*'`) and repo defaults for each role. Managers can override worker and reviewer settings for one ticket via `tickets.roles`.
+- `repo_config` sets machine-wide (`repo='*'`) and repo defaults for each role. Managers record owner-approved ticket overrides in `tickets.roles`.
 
 Explore, show what you found, ask, then write. Safe to re-run: the schema is idempotent and rows are replaced, not duplicated.
 
@@ -54,7 +54,11 @@ Then ask two things once, for the same scope:
 | autonomy | `ask` (confirm after each ticket), `review` (agents loop alone, ask before merge), `merge` (merge when review, verify and PR checks are green) | `review` |
 | land | `pr` (push and open a PR) or `local` (squash into the base, no PR) | `pr` |
 
-Tell the owner that `merge` is their standing OK for agents to merge in that scope.
+Tell the owner that `merge` permits automatic merges into the repo's non-production integration branch. The GitHub default branch and `main`/`master` always require explicit approval.
+
+### Integration branch
+
+For a specific repo, detect its GitHub default from the repo directory with `gh repo view --json defaultBranchRef --jq .defaultBranchRef.name`. If no branch is configured, fetch origin and check its remote branches for `develop`, `staging` or `dev` distinct from the default. If any exists, ask once using an interactive question with a recommendation first and the GitHub default among the options. Save the chosen branch name, including when the owner chooses the default. If there is no alternative among those branches, use the GitHub default without asking.
 
 ## 3. Write
 
@@ -69,6 +73,8 @@ and one for the settings:
 ```sh
 python3 init_db.py settings '*' review pr
 ```
+
+Save a repo's integration branch choice with `python3 init_db.py base <repo> <branch>`.
 
 Run `python3 init_db.py show` (or pass the repo path after `show`) and read the rows back to the owner.
 

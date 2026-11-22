@@ -8,7 +8,7 @@ The shared SQLite database defaults to `~/.orca/tickets/tickets.db`. Use `ZANUAR
 | `tickets` | Scope, acceptance, verification, status, branch, PR, policy and role overrides, manager dispatch and dependencies |
 | `runs` | Worker, manager and reviewer attempts and results |
 | `repo_config` | Default harness, model, effort and mode per role |
-| `repo_settings` | Autonomy and landing policy |
+| `repo_settings` | Autonomy, landing policy and integration branch |
 | `decisions` | Evidence for decisions made during a ticket |
 | `pr_watch` | Last seen PR state, owned by the watcher |
 
@@ -46,6 +46,10 @@ python3 "$tq" sql "UPDATE runs SET ended=datetime('now'), result=? WHERE id=?" d
 # Story board
 python3 "$tq" sql "SELECT repo,id,title,status,pr_url FROM tickets WHERE story=? ORDER BY repo,id" S-12
 ```
+
+## Integration branch
+
+`tq.py resolve-base <ticket> <github-default-branch>` uses `tickets.base`, then the repo's own `repo_settings.base`, then the default from `gh repo view --json defaultBranchRef --jq .defaultBranchRef.name`. Set the repo branch with `init_db.py base <repo> <branch>` (use `-` for the GitHub default). For a story or ticket exception, set `tickets.base` on each affected ticket.
 
 ## Per-ticket roles
 

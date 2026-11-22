@@ -55,6 +55,7 @@ When a manager writes:
 - The owner can talk to a manager directly. That overrides you; update your plan.
 - When the owner says “ticket X pakai <harness/model>”, relay it to the owning manager as an override for that ticket. Include the role and any effort or mode the owner specified, and have the manager record it in `tickets.roles`. Repo defaults remain in `repo_config`.
 - Relay any manager proposal to the owner with the role, harness/model and reason, with keeping defaults as the default option. Wait for the owner's decision and relay it before the manager applies any override.
+- Relay first-time integration branch choices as an interactive question, recommended option first. When the owner changes a repo's integration branch, have its manager update `repo_settings.base`. For a story or ticket exception, have the manager set `tickets.base` on the affected tickets.
 
 ## 5. Report
 

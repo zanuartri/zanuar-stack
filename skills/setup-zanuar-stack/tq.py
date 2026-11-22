@@ -4,6 +4,7 @@
 python3 tq.py sql "<SQL with ? placeholders>" [params...]
 python3 tq.py --file query.sql --params-file params.json
 python3 tq.py resolve-role <ticket> <worker|reviewer>
+python3 tq.py resolve-base <ticket> <github-default-branch>
 Use - as a filename to read SQL or JSON from stdin. Use - as a positional
 parameter for SQL NULL. Results are JSON lines, an insert id, or a row count.
 """
@@ -36,6 +37,18 @@ def resolve_role(ticket, role):
     print(json.dumps(dict(zip(("harness", "model", "effort", "mode"), row)), ensure_ascii=False))
 
 
+def resolve_base(ticket, default_branch):
+    with connect() as c:
+        row = c.execute("""
+            SELECT coalesce(tickets.base, repo_settings.base, ?)
+            FROM tickets LEFT JOIN repo_settings ON repo_settings.repo = tickets.repo
+            WHERE tickets.id = ?
+        """, (default_branch, ticket)).fetchone()
+    if row is None:
+        sys.exit(f"Unknown ticket: {ticket}")
+    print(row[0])
+
+
 def read_text(filename):
     if filename == "-":
         return sys.stdin.buffer.read().decode("utf-8-sig")
@@ -48,6 +61,11 @@ def main():
     parser.add_argument("--params-file", metavar="JSON_FILE")
     parser.add_argument("args", nargs="*")
     argv = sys.argv[1:]
+    if argv[:1] == ["resolve-base"]:
+        if len(argv) != 3:
+            parser.error("use resolve-base TICKET GITHUB_DEFAULT_BRANCH")
+        resolve_base(argv[1], argv[2])
+        return
     if argv[:1] == ["resolve-role"]:
         if len(argv) != 3 or argv[2] not in ("worker", "reviewer"):
             parser.error("use resolve-role TICKET worker|reviewer")

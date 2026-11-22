@@ -44,3 +44,14 @@ printf '%s\n' "UPDATE tickets SET roles=json_patch(coalesce(roles, '{}'), json(?
 run_python "$setup/tq.py" --file "$check_dir/roles.sql" --params-file "$check_dir/roles.json"
 test "$(run_python "$setup/tq.py" resolve-role 1 worker | tr -d '\r')" = '{"harness": "claude", "model": "ticket-model", "effort": "medium", "mode": "headless"}'
 printf '%s\n' 'Ticket role resolution check passed'
+
+test "$(run_python "$setup/tq.py" resolve-base 1 main | tr -d '\r')" = main
+run_python "$setup/init_db.py" base example develop
+run_python "$setup/init_db.py" settings example merge pr
+test "$(run_python "$setup/tq.py" resolve-base 1 main | tr -d '\r')" = develop
+run_python "$setup/tq.py" sql 'UPDATE tickets SET base=? WHERE id=?' main 1
+test "$(run_python "$setup/tq.py" resolve-base 1 trunk | tr -d '\r')" = main
+run_python "$setup/tq.py" sql 'UPDATE tickets SET base=NULL WHERE id=?' 1
+run_python "$setup/init_db.py" base example -
+test "$(run_python "$setup/tq.py" resolve-base 1 trunk | tr -d '\r')" = trunk
+printf '%s\n' 'Ticket base resolution check passed'

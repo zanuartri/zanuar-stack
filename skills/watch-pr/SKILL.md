@@ -28,7 +28,7 @@ Without Orca: one blocking `gh pr checks <pr> --watch` in the background, re-run
 2. **Failed check**: read the log, find the root cause (**root-cause**), fix on the branch (through the worker if one is still open), push. At most 2 fix attempts per PR, then escalate with what you tried.
 3. **Review comment** (human or bot): bots are useful but not always right. Fix real issues; for the rest, reply why (**pr-comments**). Resolve a thread only after your reply posted.
 4. **Conflict**: rebase or merge the base into the branch, re-run verify, push.
-5. **ci_passed**: confirm the live PR head has been reviewed by the reviewer or read by the manager, including any commits added after the previous review. Confirm required checks and review threads on that head. Merge only if the ticket's autonomy is `merge` (see **manager**), otherwise report it ready.
+5. **ci_passed**: confirm the live PR head has been reviewed and verify required checks and review threads on that head. Apply the **manager** skill's merge approval rule to the live target branch, or report the PR ready for approval.
 6. **merged / closed**: set the ticket `done` (or `blocked` if closed unmerged) and report.
 
 ## Stop

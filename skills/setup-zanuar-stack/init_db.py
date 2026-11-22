@@ -6,6 +6,7 @@ python3 init_db.py detect                  list harness binaries and existing sk
 python3 init_db.py set <repo> <role> <harness> <model> <effort> <mode>
 python3 init_db.py show [repo]             print repo_config and repo_settings rows
 python3 init_db.py settings <repo> <ask|review|merge> <pr|local>   autonomy and land for a repo (or *)
+python3 init_db.py base <repo> <branch|->   integration branch, or - for the GitHub default
 Use - for a model/effort the harness doesn't take (PowerShell 5.1 drops "" arguments).
 """
 import os, shutil, sqlite3, sys
@@ -20,6 +21,7 @@ TICKET_COLUMNS = {
     "manager_dispatch": "TEXT",
     "depends_on": "TEXT",
     "roles": "TEXT",
+    "base": "TEXT",
 }
 
 
@@ -34,6 +36,8 @@ def connect():
         for col, decl in TICKET_COLUMNS.items():
             if col not in have:
                 c.execute(f"ALTER TABLE tickets ADD COLUMN {col} {decl}")
+        if "base" not in {r[1] for r in c.execute("PRAGMA table_info(repo_settings)")}:
+            c.execute("ALTER TABLE repo_settings ADD COLUMN base TEXT")
     return c
 
 
@@ -60,7 +64,18 @@ def main(argv):
                    None if effort == "-" else effort, mode))
         c.commit()
     elif argv[:1] == ["settings"] and len(argv) == 4:
-        c.execute("INSERT OR REPLACE INTO repo_settings VALUES (?,?,?)", tuple(argv[1:]))
+        c.execute("""
+            INSERT INTO repo_settings(repo, autonomy, land) VALUES (?,?,?)
+            ON CONFLICT(repo) DO UPDATE SET autonomy=excluded.autonomy, land=excluded.land
+        """, tuple(argv[1:]))
+        c.commit()
+    elif argv[:1] == ["base"] and len(argv) == 3 and argv[1] != "*":
+        _, repo, base = argv
+        c.execute("""
+            INSERT INTO repo_settings(repo, autonomy, land, base)
+            SELECT ?, autonomy, land, ? FROM repo_settings WHERE repo='*'
+            ON CONFLICT(repo) DO UPDATE SET base=excluded.base
+        """, (repo, None if base == "-" else base))
         c.commit()
     elif argv[:1] == ["show"]:
         q, args = "SELECT * FROM repo_config", ()

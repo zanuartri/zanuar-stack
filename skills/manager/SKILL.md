@@ -17,13 +17,13 @@ Read `repo_config` for this repo (a repo row wins over `repo='*'`). If no rows e
 
 Read `repo_settings` the same way (repo row, else `'*'`): `autonomy` and `land`. A ticket's own `autonomy` / `land` column, when set, wins for that ticket.
 
+On first contact, follow **setup-zanuar-stack**'s Integration branch step. Route any branch choice through the orchestrator if one started you and wait for the owner. Use `tq.py resolve-base <ticket> <github-default-branch>` to resolve the ticket's base.
+
 | autonomy | you do alone | you ask the owner |
 |---|---|---|
 | `ask` | dispatch one ticket | after each ticket, before the next |
 | `review` (default) | worker + reviewer loop, open the PR | before merging |
-| `merge` | everything, including the merge once reviewer PASS + verify green + PR checks green and no conflict | only when stuck |
-
-**Setting `autonomy=merge` for a repo is the owner's standing OK to merge in that repo.** You don't need to ask per PR there; you do report each merge.
+| `merge` | merge into the configured non-production integration branch once review and checks pass and there is no conflict | before merging anywhere else, or when stuck |
 
 Run db queries with `python3 <setup-zanuar-stack dir>/tq.py sql "<SQL>" [params...]`. For multiline queries or parameters, use `tq.py --file query.sql --params-file params.json` (see the db README).
 
@@ -51,7 +51,7 @@ User-facing behavior that tests can't prove: if the repo has no `verify/` map an
 
 ## 2. Dispatch the worker
 
-- Branch `t/<id>-<slug>` in its own worktree, from the base you are on. Orca names it `<user>/t-<id>` instead; accept that. Save the real branch name (`git -C <worktree> branch --show-current`) on the ticket.
+- Branch `t/<id>-<slug>` in its own worktree from the resolved base. Orca names it `<user>/t-<id>` instead; accept that. Save the real branch name (`git -C <worktree> branch --show-current`) on the ticket.
 - Retrying a worker: `worker-start --terminal` is rejected for a retry. Start a new session in the existing worktree with `--worktree id:<worktreeId>` (from `orca worktree ps --json`).
 - Resolve the worker settings with `tq.py resolve-role <id> worker` before each dispatch, using `orca` if mode is unset. Prompt: "You are the worker for ticket <id> in <db path>. Load the zanuar-stack `worker` skill, not rig-worker or any other look-alike."
 - Set status `in-progress`. For every worker or reviewer attempt, insert a `runs` row with the harness, model, effort and mode actually used.
@@ -74,10 +74,10 @@ Summarise: what changed, verify output, risks. Then by the ticket's `land`:
 
 Before opening, marking ready, or merging a PR, compare its current head (or the local head before opening) with the SHA you reviewed. If commits landed after the last review, get them re-reviewed or read every intervening change yourself and record the review for the new SHA. Run verification on that head.
 
-- **`pr`** (default): open the PR with **open-pr**. Use its non-interactive push command for the ticket branch, including any follow-up pushes. Save `pr_url` and start the local watcher right away in the background with `python3 <watch-pr dir>/pr_watch.py`. Act on each message per **watch-pr** and your autonomy. Fix failures and review findings (at most 2 attempts, then escalate), and under `merge` run `gh pr merge --squash` once the current head is reviewed, checks are green and there is no conflict. The ticket stays `review` until the PR merges, then `done`.
-- **`local`**: no PR. Squash the branch into the base (`git merge --squash <branch>` on the base, one commit), only under `merge` autonomy or with the owner's OK. Then `done`.
+- **`pr`** (default): open the PR with **open-pr** against the resolved base. Use its non-interactive push for the ticket branch. Save `pr_url` and start `python3 <watch-pr dir>/pr_watch.py` in the background. Fix failures and review findings (at most 2 attempts, then escalate). Check the live PR base before landing. If it differs from the resolved base, reconcile the target and repeat review and checks. With the current head reviewed, checks green, no conflict and the merge rule below satisfied, run `gh pr merge --squash`. The ticket stays `review` until merged, then `done`.
+- **`local`**: apply the same merge rule, then run `git merge --squash <branch>` on the resolved base and commit. Then `done`.
 
-**Never merge, and never push to main or the base branch, without the owner's OK.** `autonomy=merge` on the repo or ticket is that OK, given in advance; otherwise ask. The orchestrator can relay an OK; it can't invent one.
+Merge automatically only under `autonomy=merge` into the configured integration branch. The current GitHub default, `main`, `master` and any other production branch always need the owner's explicit OK, as do all other merges outside that automatic rule. The orchestrator may relay approval. Report each merge. Direct pushes to a base branch require explicit owner approval.
 
 Under `ask`, stop after each ticket and confirm with the owner before dispatching the next.
 
