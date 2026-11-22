@@ -1,4 +1,4 @@
-# Orca adapter
+﻿# Orca adapter
 
 How the four roles map onto [Orca](https://github.com/stablyai/orca)'s `orca orchestration` commands. Run `orca orchestration <cmd> --help` for the full flags; this page covers only what the skills need.
 
@@ -13,13 +13,13 @@ The ticket db stays the source of truth for tickets and runs. Orca carries the s
 | worker | manager | `worker-start` in a new child worktree (mode `orca`) or headless | until PASS |
 | reviewer | manager | headless in the worker's worktree (default) or `worker-start` | no |
 
-## Lead → manager
+## Lead â†’ manager
 
 Start one manager per repo and keep it open so later briefs reuse it:
 
 ```sh
 orca orchestration worker-start --keep-open \
-  --repo path:<repo> --worktree current \
+  --worktree path:<repo> \
   --agent <harness> --model <model> --effort <effort> \
   --task-title "manager: <repo>" \
   --spec-file brief-<repo>.md
@@ -35,9 +35,9 @@ Before starting, check for a live one with `orca orchestration worker-list` (or 
 orca orchestration send --to dispatch:<id> --subject "brief S-12" --body-file brief-<repo>.md
 ```
 
-The lead waits with `orca orchestration check` (Orca wakes it on new mail) and answers with `orca orchestration reply --id <message_id> --body "…"`.
+The lead waits with `orca orchestration check` (Orca wakes it on new mail) and answers with `orca orchestration reply --id <message_id> --body "â€¦"`.
 
-## Manager → worker (mode `orca`)
+## Manager â†’ worker (mode `orca`)
 
 ```sh
 orca orchestration worker-start \
@@ -47,7 +47,7 @@ orca orchestration worker-start \
   --spec "You are the worker for ticket <id> in ~/.orca/tickets/tickets.db. Load the worker skill."
 ```
 
-The worker reports with `orca orchestration send --type worker_done …` and asks with `orca orchestration ask …`; the manager receives both through `check`. `worker-read` shows bounded output when a worker goes quiet. Steer with `send --to dispatch:<id>`, stop with `worker-stop`.
+The worker reports with `orca orchestration send --type worker_done â€¦` and asks with `orca orchestration ask â€¦`; the manager receives both through `check`. `worker-read` shows bounded output when a worker goes quiet. Steer with `send --to dispatch:<id>`, stop with `worker-stop`.
 
 ## Kept-open sessions
 
