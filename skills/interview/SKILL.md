@@ -1,6 +1,6 @@
 ---
 name: interview
-description: Before starting any feature or non-trivial change, interview the owner one question at a time until goal, scope, acceptance and non-goals are unambiguous, then summarise back for confirmation. Use on every new feature request to the lead, or when the owner says interview, grill me, or "ask me first".
+description: Before starting any feature or non-trivial change, interview the owner one question at a time until goal, scope, acceptance and non-goals are unambiguous, then summarise back for confirmation. Use on every new feature request to the orchestrator, or when the owner says interview, grill me, or "ask me first".
 ---
 
 # Interview

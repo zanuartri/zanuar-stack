@@ -8,12 +8,12 @@ The ticket db stays the source of truth for tickets and runs. Orca carries the s
 
 | role | started by | how | stays open |
 |---|---|---|---|
-| lead | owner | an ordinary Orca agent session with the `lead` skill | yes |
-| manager | lead (or owner) | `worker-start --keep-open` in the repo | yes, reused per repo |
+| orchestrator | owner | an ordinary Orca agent session with the `orchestrator` skill | yes |
+| manager | orchestrator (or owner) | `worker-start --keep-open` in the repo | yes, reused per repo |
 | worker | manager | `worker-start` in a new child worktree (mode `orca`) or headless | until PASS |
 | reviewer | manager | headless in the worker's worktree (default) or `worker-start` | no |
 
-## Lead → manager
+## Orchestrator → manager
 
 Start one manager per repo and keep it open so later briefs reuse it:
 
@@ -35,7 +35,7 @@ Before starting, check for a live one with `orca orchestration worker-list` (or 
 orca orchestration send --to dispatch:<id> --subject "brief S-12" --body-file brief-<repo>.md
 ```
 
-The lead waits with `orca orchestration check` (Orca wakes it on new mail) and answers with `orca orchestration reply --id <message_id> --body "…"`.
+The orchestrator waits with `orca orchestration check` (Orca wakes it on new mail) and answers with `orca orchestration reply --id <message_id> --body "…"`.
 
 ## Manager → worker (mode `orca`)
 
