@@ -34,3 +34,13 @@ test "$(printf '[1]\n' | run_python "$setup/tq.py" --file "$check_dir/select.sql
 test "$(run_python "$setup/tq.py" --file - 1 < "$check_dir/select.sql" | tr -d '\r')" = "$expected"
 test "$(run_python "$setup/tq.py" sql 'SELECT goal FROM tickets WHERE id=?' 1 | tr -d '\r')" = '{"goal": "First line\nSecond line"}'
 printf '%s\n' 'Ticket database and PR watcher checks passed'
+
+run_python "$setup/init_db.py" set '*' worker codex default-model medium orca
+test "$(run_python "$setup/tq.py" resolve-role 1 worker | tr -d '\r')" = '{"harness": "codex", "model": "default-model", "effort": "medium", "mode": "orca"}'
+run_python "$setup/init_db.py" set example worker codex repo-model - headless
+test "$(run_python "$setup/tq.py" resolve-role 1 worker | tr -d '\r')" = '{"harness": "codex", "model": "repo-model", "effort": "medium", "mode": "headless"}'
+printf '%s\n' '["{\"worker\":{\"harness\":\"claude\",\"model\":\"ticket-model\"}}", 1]' > "$check_dir/roles.json"
+printf '%s\n' "UPDATE tickets SET roles=json_patch(coalesce(roles, '{}'), json(?)) WHERE id=?" > "$check_dir/roles.sql"
+run_python "$setup/tq.py" --file "$check_dir/roles.sql" --params-file "$check_dir/roles.json"
+test "$(run_python "$setup/tq.py" resolve-role 1 worker | tr -d '\r')" = '{"harness": "claude", "model": "ticket-model", "effort": "medium", "mode": "headless"}'
+printf '%s\n' 'Ticket role resolution check passed'

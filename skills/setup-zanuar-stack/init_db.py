@@ -19,6 +19,7 @@ TICKET_COLUMNS = {
     "land": "TEXT CHECK (land IN ('pr','local'))",
     "manager_dispatch": "TEXT",
     "depends_on": "TEXT",
+    "roles": "TEXT",
 }
 
 
@@ -27,10 +28,12 @@ def connect():
     c = sqlite3.connect(DB)
     with open(SCHEMA, encoding="utf-8") as f:
         c.executescript(f.read())
-    have = {r[1] for r in c.execute("PRAGMA table_info(tickets)")}
-    for col, decl in TICKET_COLUMNS.items():
-        if col not in have:
-            c.execute(f"ALTER TABLE tickets ADD COLUMN {col} {decl}")
+    with c:
+        c.execute("BEGIN IMMEDIATE")
+        have = {r[1] for r in c.execute("PRAGMA table_info(tickets)")}
+        for col, decl in TICKET_COLUMNS.items():
+            if col not in have:
+                c.execute(f"ALTER TABLE tickets ADD COLUMN {col} {decl}")
     return c
 
 

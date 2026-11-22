@@ -53,6 +53,7 @@ When a manager writes:
 - Cross-repo order lives in `tickets.depends_on`. When a provider ticket reaches `review`, send its branch and head commit (`git -C <provider> rev-parse <branch>`) to the manager of every ticket that depends on it, without waiting to be asked. Include the provider path so its reviewer can check shared fixtures.
 - Escalate to the owner only: contract or merge-order changes, scope changes, anything irreversible (merging, pushing to main, deleting branches or data), spending, and genuine uncertainty. Batch them into one question with a recommended option.
 - The owner can talk to a manager directly. That overrides you; update your plan.
+- When the owner says “ticket X pakai <harness/model>”, relay it to the owning manager as an override for that ticket. Include the role and any effort or mode the owner specified, and have the manager record it in `tickets.roles`. Repo defaults remain in `repo_config`.
 
 ## 5. Report
 
