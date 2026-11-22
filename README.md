@@ -26,6 +26,21 @@ The orchestrator interviews you, writes one brief per repo and starts a manager 
 
 ## How it works
 
+```
+                 owner
+                   │  decisions only
+                   ▼
+             orchestrator ── interview → story + one brief per repo
+        ┌──────────┼──────────┐
+        ▼          ▼          ▼
+     manager    manager    manager      one per repo, kept open
+      │    │
+      ▼    ▼
+   worker reviewer                      one ticket, own worktree/branch
+      │    ▲
+      └────┘  FIX rounds (max ~3) → PASS → PR
+```
+
 Shared state is one SQLite file, `~/.orca/tickets/tickets.db` (see [`db/`](db/README.md)): stories, tickets, runs, per-repo role config.
 
 - **Ticket statuses:** `queued` (waiting on dependencies) → `todo` → `in-progress` → `review` → `done`. Also `needs-you` (owner decision), `blocked` and `canceled`.
