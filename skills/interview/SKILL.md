@@ -7,6 +7,8 @@ description: Before starting any feature or non-trivial change, interview the ow
 
 Nothing gets planned until you and the owner agree on what "done" means.
 
+Who runs it: the orchestrator when one is running (once, at product level); the manager only when the owner talks to it directly with no orchestrator.
+
 ## How to ask
 - **One question per ask.** Wait for the answer before the next one.
 - Multiple choice, 2–4 options, your **recommended option first**, labelled `(Recommended)`, with one line on why. The owner can always answer in their own words.

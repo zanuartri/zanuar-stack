@@ -76,7 +76,9 @@ codex plugin marketplace add zanuartri/zanuar-stack
 codex plugin add zanuar-stack@zanuar-stack
 ```
 
-Both read the same `.claude-plugin/` manifests, which point at `skills/`. A new release reaches users when `version` in `.claude-plugin/plugin.json` changes.
+Codex also reads `~/.agents/skills`, where skills.sh installs for Pi and others. On one machine use **either** the Codex plugin **or** skills.sh for Codex, never both (every skill appears twice). If other harnesses already use skills.sh, prefer skills.sh for Codex too. Same for Claude Code: the plugin **or** a skills.sh link, not both.
+
+Both plugins read the same `.claude-plugin/` manifests, which point at `skills/`. A new release reaches users when `version` in `.claude-plugin/plugin.json` changes.
 
 ### Everything else (skills.sh, manual updates)
 

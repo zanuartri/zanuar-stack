@@ -21,6 +21,8 @@ Use a [design handoff](../design-handoff/SKILL.md) to write the story and briefs
 
 For other feature requests, start with the **interview** skill, even when the request looks clear. Stop when goal, scope, acceptance and non-goals are settled and the owner has confirmed the summary. Facts you can look up (repo paths, current code, open tickets) you look up yourself; only decisions go to the owner.
 
+Interview once, at product level: goal, user, scope and repos, the cross-repo contract, per-repo acceptance, merge order and non-goals. Put the result in the briefs. You are the owner's one voice; managers don't interview them.
+
 Check that each existing repo path is its git root. Use the new-repo flow for paths the owner wants to create.
 
 ### New project or repo
@@ -70,6 +72,7 @@ Start the repos that land first first. Later repos can plan in parallel when the
 When a manager writes:
 - Answer anything the story, contract, order or code already settles. Decide, and state your pick in one line.
 - Cross-repo order lives in `tickets.depends_on`. When a provider ticket reaches `review`, send its branch and head commit (`git -C <provider> rev-parse <branch>`) to the manager of every ticket that depends on it, without waiting to be asked. Include the provider path so its reviewer can check shared fixtures.
+- Filter manager questions: answer from the plan, contract or code when you can. Otherwise batch the open questions from several managers into ONE interactive ask to the owner (recommended options first) and relay the answers. Same for questions that come up mid-run.
 - Escalate to the owner only: contract or merge-order changes, scope changes, anything irreversible (merging, pushing to main, deleting branches or data), spending, and genuine uncertainty. Batch them into one question with a recommended option.
 - The owner can talk to a manager directly. That overrides you; update your plan.
 - When the owner says “ticket X pakai <harness/model>”, relay it to the owning manager as an override for that ticket. Include the role and any effort or mode the owner specified, and have the manager record it in `tickets.roles`. Repo defaults remain in `repo_config`.
