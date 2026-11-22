@@ -4,7 +4,7 @@ How the four roles map onto [Orca](https://github.com/stablyai/orca)'s `orca orc
 
 The ticket db stays the source of truth for tickets and runs. Orca carries the sessions and the messages.
 
-See [Working across Orca bots](bots.md) for design handoffs and UI reviews between teams.
+See [Working across Orca bots](bots.md) for questions, handoffs, and updates between teams.
 
 Skill names below are this pack's: `orchestrator`, `manager`, `worker`, `reviewer`, `setup-zanuar-stack`. If the harness also has look-alikes from another pack (`rig-manager`, `rig-worker`, `rig-reviewer`, …), spawn prompts must name the zanuar-stack skill and agents must not load the others.
 
@@ -88,7 +88,7 @@ cd "$worktree"
 | omp | `omp -p "$prompt"` |
 | commandcode | `commandcode -p "$prompt" --yolo --max-turns 24` |
 
-Flags differ per harness and version; check its `--help`. Run it as a background command so the manager is woken when it exits, and read the verdict or report from its final output. Record the run in `runs` with `mode='headless'`.
+Flags differ per harness and version. Check its `--help` and pass the approved settings. Run it in the background so the manager wakes when it exits. Headless runs send no `worker_done`. Read the final output and the verdict or report file. Retry once if the result is missing. Record the actual mode in `runs` as `headless`.
 
 Remove a headless worktree after its PR merges with `git -C "$repo" worktree remove "$worktree"`.
 
