@@ -56,7 +56,7 @@ cp -r skills/* ~/.claude/skills/
 # other harnesses: copy skills/* into their skills dir
 ```
 
-Create the db and seed machine defaults with the commands in [`db/README.md`](db/README.md). Then start a session with the `lead` skill (several repos) or the `manager` skill (one repo).
+Create the db with the commands in [`db/README.md`](db/README.md). Then start a session with the `lead` skill (several repos) or the `manager` skill (one repo).
 
 ## Credits
 

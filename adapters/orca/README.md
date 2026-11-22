@@ -20,7 +20,7 @@ Start one manager per repo and keep it open so later briefs reuse it:
 ```sh
 orca orchestration worker-start --keep-open \
   --repo path:<repo> --worktree current \
-  --agent claude --model sonnet-5.5 --effort low \
+  --agent <harness> --model <model> --effort <effort> \
   --task-title "manager: <repo>" \
   --spec-file brief-<repo>.md
 ```

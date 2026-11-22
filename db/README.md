@@ -23,10 +23,10 @@ mkdir -p ~/.orca/tickets
 python -c "import sqlite3,os;d=os.path.expanduser('~/.orca/tickets/tickets.db');sqlite3.connect(d).executescript(open('db/schema.sql').read())"
 ```
 
-Seed the machine defaults (adjust to your harnesses):
+Optional: seed machine-wide defaults (replace the placeholders with your own; skip this and the manager asks on first use):
 
 ```sh
-python -c "import sqlite3,os;c=sqlite3.connect(os.path.expanduser('~/.orca/tickets/tickets.db'));c.executemany('INSERT OR REPLACE INTO repo_config VALUES (?,?,?,?,?,?)',[('*','manager','claude','sonnet-5.5','low','orca'),('*','worker','omp','deepseek-4.1','low','orca'),('*','reviewer','commandcode','glm-5.3-flash',None,'headless')]);c.commit()"
+python -c "import sqlite3,os;c=sqlite3.connect(os.path.expanduser('~/.orca/tickets/tickets.db'));c.executemany('INSERT OR REPLACE INTO repo_config VALUES (?,?,?,?,?,?)',[('*','manager','<harness>','<model>','<effort>','orca'),('*','worker','<harness>','<model>','<effort>','orca'),('*','reviewer','<harness>','<model>','<effort>','headless')]);c.commit()"
 ```
 
 ## Query templates
@@ -58,7 +58,7 @@ python -c "$DB;s,i=sys.argv[1:3];col={'in-progress':'started_at','review':'revie
 python -c "$DB;c.execute('UPDATE tickets SET fix_rounds=fix_rounds+1 WHERE id=?',(sys.argv[1],));c.commit()" <id>
 
 # start / end a run
-python -c "$DB;cur=c.execute('INSERT INTO runs(ticket,role,harness,model,effort,mode) VALUES (?,?,?,?,?,?)',sys.argv[1:7]);c.commit();print(cur.lastrowid)" <id> worker omp deepseek-4.1 low orca
+python -c "$DB;cur=c.execute('INSERT INTO runs(ticket,role,harness,model,effort,mode) VALUES (?,?,?,?,?,?)',sys.argv[1:7]);c.commit();print(cur.lastrowid)" <id> worker <harness> <model> <effort> orca
 python -c "$DB;c.execute('UPDATE runs SET ended=datetime(\"now\"),result=? WHERE id=?',sys.argv[1:3]);c.commit()" PASS <run_id>
 
 # story board across repos

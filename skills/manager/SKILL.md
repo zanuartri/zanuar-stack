@@ -11,15 +11,7 @@ State: the ticket db (`db/README.md`). Spawning and messaging: your adapter (`ad
 
 ## 0. Setup
 
-Read `repo_config` for this repo (a repo row wins over `repo='*'`). If neither exists, use these defaults and save them as the repo's rows:
-
-| role | harness | model | effort | mode |
-|---|---|---|---|---|
-| manager | claude | sonnet-5.5 | low | orca |
-| worker | omp | deepseek-4.1 | low | orca |
-| reviewer | commandcode | glm-5.3-flash | – | headless |
-
-Ask (the lead, or the owner when there is no lead) only when a role's harness isn't installed. "Use codex for this one" applies to that ticket only; offer once to save it.
+Read `repo_config` for this repo (a repo row wins over `repo='*'`). If no rows exist for a role, ask once (the lead if one started you, otherwise the owner) for harness, model, effort and mode per role (manager, worker, reviewer), offering only harnesses installed on this machine, then save the answers as the repo's rows. Never ask again; the db is the source of truth from then on.
 
 ## 1. Write tickets
 
