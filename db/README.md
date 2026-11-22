@@ -5,9 +5,9 @@ The shared SQLite database defaults to `~/.orca/tickets/tickets.db`. Use `ZANUAR
 | Table | Contents |
 |---|---|
 | `stories` | Cross-repo goals |
-| `tickets` | Scope, acceptance, verification, status, branch, PR, policy overrides, manager dispatch and dependencies |
+| `tickets` | Scope, acceptance, verification, status, branch, PR, policy and role overrides, manager dispatch and dependencies |
 | `runs` | Worker, manager and reviewer attempts and results |
-| `repo_config` | Harness, model, effort and mode per role |
+| `repo_config` | Default harness, model, effort and mode per role |
 | `repo_settings` | Autonomy and landing policy |
 | `decisions` | Evidence for decisions made during a ticket |
 | `pr_watch` | Last seen PR state, owned by the watcher |
@@ -45,6 +45,25 @@ python3 "$tq" sql "UPDATE runs SET ended=datetime('now'), result=? WHERE id=?" d
 
 # Story board
 python3 "$tq" sql "SELECT repo,id,title,status,pr_url FROM tickets WHERE story=? ORDER BY repo,id" S-12
+```
+
+## Per-ticket roles
+
+`tickets.roles` is nullable text containing a JSON object keyed by `worker` or `reviewer`. The manager resolves each field in this order: `ticket.roles` (the ticket's `roles` column) > `repo_config[repo]` > `repo_config['*']`. An absent role, missing field, or JSON null inherits the next available value. Record what actually ran in `runs`.
+
+For example, a ticket can store these overrides:
+
+```json
+{"worker":{"harness":"claude","model":"<model-id>","effort":"high"},"reviewer":{"mode":"headless"}}
+```
+
+To update ticket 12, save `["{\"worker\":{\"effort\":\"high\"}}",12]` in `update-roles.json`. The first parameter is the JSON patch as a string. `json_patch` preserves other overrides and removes keys set to JSON null.
+
+```sh
+printf '%s\n' "UPDATE tickets SET roles=json_patch(coalesce(roles, '{}'), json(?)) WHERE id=?" > update-roles.sql
+python3 "$tq" --file update-roles.sql --params-file update-roles.json
+python3 "$tq" resolve-role 12 worker
+python3 "$tq" resolve-role 12 reviewer
 ```
 
 ## Multiline SQL and parameters

@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS tickets (
   pr_url     TEXT,
   autonomy   TEXT CHECK (autonomy IN ('ask','review','merge')),  -- NULL = use repo_settings
   land       TEXT CHECK (land IN ('pr','local')),                -- NULL = use repo_settings
+  roles      TEXT,                  -- JSON overrides for worker and reviewer
   manager_dispatch TEXT,           -- Orca dispatch id of the owning manager; pr_watch mails it
   depends_on TEXT,                 -- ticket ids this one waits on, comma list: '12,14'
   fix_rounds INTEGER NOT NULL DEFAULT 0,

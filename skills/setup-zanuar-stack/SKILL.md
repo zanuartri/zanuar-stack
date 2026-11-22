@@ -9,7 +9,7 @@ disable-model-invocation: true
 Gets the shared state ready that the `orchestrator`, `manager`, `worker` and `reviewer` skills (this pack's, not look-alikes such as `rig-manager`) assume:
 
 - the ticket db at `~/.orca/tickets/tickets.db`, built from [`schema.sql`](schema.sql)
-- `repo_config` rows: who plays each role, machine-wide (`repo='*'`) or for one repo
+- `repo_config` sets machine-wide (`repo='*'`) and repo defaults for each role. Managers can override worker and reviewer settings for one ticket via `tickets.roles`.
 
 Explore, show what you found, ask, then write. Safe to re-run: the schema is idempotent and rows are replaced, not duplicated.
 

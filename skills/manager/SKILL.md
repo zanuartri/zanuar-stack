@@ -45,14 +45,16 @@ Scope:      files/areas expected to change; what must NOT change
 
 Insert it with the "new ticket" query, with the story if you have one. Use the same absolute repo path with forward slashes across agents. Set `manager_dispatch` to your current Orca dispatch ID from the task preamble. A ticket that needs another repo's work first gets `depends_on` (ticket ids, comma list) and waits until the orchestrator relays the provider's branch and commit. One ticket is what one agent can finish in one session. Tickets that touch the same files run one after another. Ask only what the code can't tell you; **brief** helps sharpen a thin one.
 
+Set the relevant fields in `tickets.roles` when the owner requests a role override for one ticket or when the ticket is hard or risky, such as a migration, concurrency change, or security work. When possible, choose a reviewer from a different model family than the worker. Keep one-off changes in `tickets.roles` and reserve `repo_config` for defaults. See the db README for how to store and resolve overrides.
+
 User-facing behavior that tests can't prove: if the repo has no `verify/` map and the owner asks for one, or such tickets keep landing unproven, add a ticket to build it with **make-verify**. Optional; ordinary tickets don't need it.
 
 ## 2. Dispatch the worker
 
 - Branch `t/<id>-<slug>` in its own worktree, from the base you are on. Orca names it `<user>/t-<id>` instead; accept that. Save the real branch name (`git -C <worktree> branch --show-current`) on the ticket.
 - Retrying a worker: `worker-start --terminal` is rejected for a retry. Start a new session in the existing worktree with `--worktree id:<worktreeId>` (from `orca worktree ps --json`).
-- Start the worker with the worker row's harness, model, effort and mode (default `orca`). Prompt: "You are the worker for ticket <id> in <db path>. Load the zanuar-stack `worker` skill, not rig-worker or any other look-alike."
-- Set status `in-progress` and insert a `runs` row.
+- Resolve the worker settings with `tq.py resolve-role <id> worker` before each dispatch, using `orca` if mode is unset. Prompt: "You are the worker for ticket <id> in <db path>. Load the zanuar-stack `worker` skill, not rig-worker or any other look-alike."
+- Set status `in-progress`. For every worker or reviewer attempt, insert a `runs` row with the harness, model, effort and mode actually used.
 
 ## 3. While it runs
 
@@ -62,9 +64,9 @@ Wait for messages. Don't poll, and don't read its screen unless it went quiet or
 
 When the worker reports done (status `review`):
 1. **Triage by diffstat only**: `git -C <worktree> diff <base>...HEAD --stat` and the worker's report. Right files? Nothing outside scope? Verify ran and passed? If not, send it back with no reviewer.
-2. Normally start the reviewer (default `headless`) in the same worktree for the full diff. For a few lines of docs or config, you may read it yourself. Record the reviewed SHA with the verdict in `runs.result`. The prompt names the zanuar-stack `reviewer` skill and gives it a verdict file (`<scratch>/verdict-<id>.txt`). Read that file even if the run exits zero. No verdict line: retry once, then treat it as a failed run. For cross-repo fixtures, give the reviewer the provider repo path and commit so it can compare `git hash-object` of each shared file.
+2. Normally start the reviewer in the same worktree for the full diff. Resolve its settings with `tq.py resolve-role <id> reviewer` before each dispatch, using `headless` if mode is unset. For a few lines of docs or config, you may read it yourself. Record the reviewed SHA with the verdict in `runs.result`. The prompt names the zanuar-stack `reviewer` skill and gives it a verdict file (`<scratch>/verdict-<id>.txt`). Read that file even if the run exits zero. No verdict line: retry once, then treat it as a failed run. For cross-repo fixtures, give the reviewer the provider repo path and commit so it can compare `git hash-object` of each shared file.
 3. **FIX**: check every finding against the cited code, callers, tests and ticket requirements. Forward only substantiated findings, with evidence, and treat evidence from worker pushback the same way. If no finding holds up, record why and get a corrected verdict or finish the review yourself. Bump `fix_rounds` when you request changes and end the reviewer run. **PASS**: go to 5.
-4. After about 3 FIX rounds, stop: set `needs-you` and raise the problem with options.
+4. If a low-cost worker has failed to deliver an acceptable revision through two FIX rounds, escalate once to a stronger model for the next attempt. Record the change in `tickets.roles`, note the escalation in the owner or orchestrator report, and start a new session in the same worktree with the resolved settings. After about 3 FIX rounds, set `needs-you` and raise the problem with options.
 
 ## 5. Land
 
