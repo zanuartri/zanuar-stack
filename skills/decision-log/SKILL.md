@@ -12,7 +12,7 @@ One log, one row per decision. Short cells, evidence as a pointer.
 
 ## Where
 - **db** (default when the team db exists): the `decisions` table, with `ticket` set. Insert with stdlib `sqlite3`, passing values as parameters.
-- **TSV**: `decisions.tsv` in the work dir, or `.audit/<slug>.tsv` when several efforts run. Header row first. Strip tabs and newlines from cells; prefix cells starting with `= + - @` with `'` so spreadsheets don't run them.
+- **TSV** (lite mode or no ticket db): `decisions.tsv` in the work dir, or `.audit/<slug>.tsv` when several efforts run. Header row first. Strip tabs and newlines from cells; prefix cells starting with `= + - @` with `'` so spreadsheets don't run them.
 
 Keep it out of git unless the reviewer needs the trail to trust the result; then commit it with the PR.
 

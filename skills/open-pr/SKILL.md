@@ -14,7 +14,7 @@ description: Open a short, readable pull request for a finished ticket branch. U
 5. End the body with the model and harness that wrote it (e.g. `Written by <model> in <harness>.`), plus any helper models. Don't guess a model name you can't see.
 6. **Scan** title, body and attachments for secrets and private details.
 7. Push the branch (never the base) and open a real PR, not a draft, so review bots run: `gh pr create --base <base> --head <branch> --title … --body-file …`. If GraphQL is rate-limited, use `gh api repos/<o>/<r>/pulls -f title=… -f head=… -f base=… -F body=@<file>`.
-8. Save `pr_url` on the ticket. Continue with **watch-pr** if asked.
+8. With a ticket DB, save `pr_url` on the ticket. In lite mode, include the text brief (goal, acceptance, verify, scope) in the PR body and report the URL in chat. Continue with **watch-pr** if asked.
 
 Don't add follow-up comments unless they serve the request; use **pr-comments** when you do.
 

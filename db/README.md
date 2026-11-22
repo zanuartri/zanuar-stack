@@ -32,12 +32,12 @@ repo=$(git rev-parse --show-toplevel)
 python3 "$tq" sql "SELECT * FROM repo_config WHERE repo IN (?, '*') ORDER BY repo='*', role" "$repo"
 
 # Open tickets and one ticket in full
-python3 "$tq" sql "SELECT id,story,title,status,branch,fix_rounds FROM tickets WHERE repo=? AND status<>'done'" "$repo"
+python3 "$tq" sql "SELECT id,story,title,status,branch,fix_rounds FROM tickets WHERE repo=? AND status NOT IN ('done','canceled')" "$repo"
 python3 "$tq" sql "SELECT * FROM tickets WHERE id=?" 12
 
 # Move to review and count a fix round
 python3 "$tq" sql "UPDATE tickets SET status='review', review_at=datetime('now') WHERE id=?" 12
-python3 "$tq" sql "UPDATE tickets SET fix_rounds=fix_rounds+1 WHERE id=?" 12
+python3 "$tq" sql "UPDATE tickets SET status='in-progress', fix_rounds=fix_rounds+1 WHERE id=? AND status='review'" 12
 
 # Start and end a run (replace the example run ID with the returned ID)
 python3 "$tq" sql "INSERT INTO runs(ticket,role,harness,model,effort,mode) VALUES (?,?,?,?,?,?)" 12 worker codex - - orca
@@ -46,6 +46,20 @@ python3 "$tq" sql "UPDATE runs SET ended=datetime('now'), result=? WHERE id=?" d
 # Story board
 python3 "$tq" sql "SELECT repo,id,title,status,pr_url FROM tickets WHERE story=? ORDER BY repo,id" S-12
 ```
+
+## Ticket transitions
+
+```text
+queued --all depends_on tickets done--> todo
+todo --> in-progress --> review
+review --FIX from reviewer, CI or PR comment--> in-progress --> review
+review --owner decision needed--> needs-you --> in-progress or review
+any --record the reason--> blocked --> in-progress
+review --PR merged--> done
+any --> canceled
+```
+
+The manager writes each transition. On FIX, update the status and increment `fix_rounds` together before returning the work to the same worker. On cancellation, downstream tickets still need their dependencies resolved. The PR watcher skips canceled and done tickets.
 
 ## Integration branch
 
@@ -75,11 +89,11 @@ python3 "$tq" resolve-role 12 reviewer
 Save the statement as UTF-8 `new-ticket.sql`:
 
 ```sql
-INSERT INTO tickets(repo, story, title, goal, acceptance, verify, scope)
-VALUES (?, ?, ?, ?, ?, ?, ?)
+INSERT INTO tickets(repo, story, title, goal, acceptance, verify, scope, status, depends_on)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 ```
 
-Save the values in order as a UTF-8 JSON array in `ticket.json`. Use `null` for SQL NULL and `\n` for line breaks within a value. Named SQLite placeholders also accept a JSON object.
+Save the values in order as a UTF-8 JSON array in `ticket.json`. For `status` and `depends_on`, use `"todo", null` for a ready ticket or `"queued", "12,14"` for a ticket waiting on tickets 12 and 14. Use `null` for SQL NULL and `\n` for line breaks within a value. Named SQLite placeholders also accept a JSON object.
 
 ```sh
 python3 "$tq" --file new-ticket.sql --params-file ticket.json

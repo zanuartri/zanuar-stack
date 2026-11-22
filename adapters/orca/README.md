@@ -19,6 +19,15 @@ Skill names below are this pack's: `orchestrator`, `manager`, `worker`, `reviewe
 
 ## Orchestrator → manager
 
+For a new repo, register the Git root after the initial commit:
+
+```sh
+orca repo add --path "$repo" --json
+orca agent installed --json
+```
+
+Compare detected harnesses with the installed agents on the execution host during setup. Save managed session roles as `mode=orca` and verify model and effort support before saving. Once setup records the new repo's settings, find its primary worktree with `orca worktree ps --json` and start the manager there using the command below.
+
 Start one manager per repo and keep it open so later briefs reuse it:
 
 ```sh
@@ -46,10 +55,10 @@ The orchestrator waits with `orca orchestration check` (Orca wakes it on new mai
 
 ### Track the current dispatch
 
-A send that starts a follow-up gives it a new dispatch ID. The sender reads the receipt and replaces the previous dispatch on all unfinished tickets owned by that manager, including tickets from earlier stories. A queued message on the current dispatch needs no update. Use the actual IDs from Orca, without the `dispatch:` prefix:
+A send that starts a follow-up gives it a new dispatch ID. In lite mode, use the latest receipt for future messages and skip DB updates. In full mode, replace the previous dispatch on all unfinished tickets owned by that manager, including tickets from earlier stories. A queued message on the current dispatch needs no update. Use the actual IDs from Orca, without the `dispatch:` prefix:
 
 ```sh
-python3 skills/setup-zanuar-stack/tq.py sql "UPDATE tickets SET manager_dispatch=? WHERE manager_dispatch=? AND status<>'done'" "$new_dispatch" "$manager_dispatch"
+python3 skills/setup-zanuar-stack/tq.py sql "UPDATE tickets SET manager_dispatch=? WHERE manager_dispatch=? AND status NOT IN ('done','canceled')" "$new_dispatch" "$manager_dispatch"
 ```
 
 The manager also refreshes its own tickets from its active preamble on entry to a follow-up, including when woken by the PR watcher. For a new worker follow-up, use the receipt's new worker dispatch ID for `worker-show` and further messages.
@@ -65,6 +74,8 @@ orca orchestration worker-start \
 ```
 
 The worker reports with `orca orchestration send --type worker_done …` and asks with `orca orchestration ask …`; the manager receives both through `check`. `worker-read` shows bounded output when a worker goes quiet. Steer with `send --to dispatch:<id>`, stop with `worker-stop`.
+
+In lite mode, use a short task label for the worktree name and pass the full text brief with `--spec-file` in place of the DB ticket prompt. Use the same dispatch and reporting commands.
 
 ## Kept-open sessions
 

@@ -9,7 +9,7 @@ You review one worker's branch from inside the ticket's worktree. **Don't edit f
 
 Skills named here are zanuar-stack's (`orchestrator`, `manager`, `worker`, `reviewer`, `setup-zanuar-stack` and the practice skills). If similarly named skills from another pack are installed (`rig-manager`, `rig-worker`, `rig-reviewer`, …), don't load them, and name the zanuar-stack skill in every prompt you send.
 
-1. Read the ticket from the db: goal, acceptance, verify, scope, base.
+1. Read the ticket's goal, acceptance, verify, scope and base from the DB. In **lite mode** (the owner chose lite or the configured DB is absent), use the prompt's text brief and skip all DB reads and writes.
 2. Read the **full** diff and log: `git diff <base>...HEAD` and `git log <base>..HEAD`.
 3. Check that:
    - every acceptance line is actually met
@@ -23,6 +23,6 @@ Skills named here are zanuar-stack's (`orchestrator`, `manager`, `worker`, `revi
 4. Send the verdict as your final message to the manager, and if your prompt names a verdict file, write the same text there (headless runs: the manager reads only the file):
    - `PASS: <one line why>`
    - `FIX: 1) file:line problem → expected 2) …`, most severe first. Real defects only; style nits don't count.
-5. End your `runs` row with `PASS` or `FIX`.
+5. In full mode, end your `runs` row with `PASS` or `FIX`.
 
 Be honest both ways: don't pass failing work, and don't invent problems.

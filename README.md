@@ -21,6 +21,8 @@ A skill pack for running coding agents as a small team: one **orchestrator** acr
 
 Shared state is one SQLite file, `~/.orca/tickets/tickets.db` (see [`db/`](db/README.md)): stories, tickets, runs, per-repo role config.
 
+For a [new project or repo](skills/orchestrator/SKILL.md#new-project-or-repo), initialize and register it before briefing its manager on the first skeleton ticket.
+
 ## Skills
 
 | role skills | |
@@ -51,6 +53,10 @@ Shared state is one SQLite file, `~/.orca/tickets/tickets.db` (see [`db/`](db/RE
 | [`pr-comments`](skills/pr-comments/SKILL.md) | attributed, direct PR comments |
 
 Harness wiring: [`adapters/orca`](adapters/orca/README.md).
+
+## Lite mode
+
+Choose lite at setup to run without a ticket database. The roles use text briefs in prompts and PRs, retain worker and reviewer handoffs, and report status in chat. Lite has no persisted ticket history, story board, KPIs, DB-backed watcher or per-ticket role overrides. Use `gh pr checks <n> --watch` for CI and TSV for the decision log. Each practice skill can also be used on its own without a ticket database.
 
 ## Installation
 

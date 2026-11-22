@@ -11,6 +11,10 @@ Skills named here are zanuar-stack's (`orchestrator`, `manager`, `worker`, `revi
 
 State: the ticket db (`db/README.md`; created by `/setup-zanuar-stack`). Spawning and messaging: your adapter (`adapters/orca/README.md`).
 
+## Lite mode
+
+Use lite when the owner chooses it or the configured DB is absent. Treat each ticket as a text brief with goal, acceptance, verify and scope. Carry it with the branch and base in the worker and reviewer prompts and include it in the PR body. Use the role and repo settings agreed in chat. Skip DB queries, rows, KPI and per-ticket role overrides. Keep the worker and reviewer loop, return FIX work to the same worker, and report status, reviewed commit and verification in chat. Use `gh pr checks <n> --watch` for CI and `gh pr view <n> --comments` for PR comments in place of the DB watcher.
+
 ## 0. Setup
 
 Use an Orca-capable harness and a model that reliably follows the full dispatch, review, and PR protocol. In S-4, Haiku/Flash-class models did well as workers and reviewers. As managers they skipped review and pushed straight to base.
@@ -19,7 +23,7 @@ Read `repo_config` for this repo (a repo row wins over `repo='*'`). If no rows e
 
 Read `autonomy` from `repo_settings` the same way (repo row, else `'*'`). A ticket's own `autonomy` column, when set, wins for that ticket.
 
-On first contact, follow **setup-zanuar-stack**'s Integration branch step. Route any branch choice through the orchestrator if one started you and wait for the owner. Use `tq.py resolve-base <ticket> <github-default-branch>` to resolve the ticket's base.
+On first contact, follow **setup-zanuar-stack**'s Integration branch step. Route any branch choice through the orchestrator if one started you and wait for the owner. Use `tq.py resolve-base <ticket> <github-default-branch>` to resolve the ticket's base. For a local-only repo, pass the saved base in place of the hosted default and use the local base ref for worktrees and review.
 
 | autonomy | you do alone | you ask the owner |
 |---|---|---|
@@ -45,7 +49,21 @@ Verify:     exact commands: unit tests, typecheck, lint, plus any run
 Scope:      files/areas expected to change; what must NOT change
 ```
 
-Insert it with the "new ticket" query, with the story if you have one. Use the same absolute repo path with forward slashes across agents. Set `manager_dispatch` to your current Orca dispatch ID from the task preamble. A ticket that needs another repo's work first gets `depends_on` (ticket ids, comma list) and waits until the orchestrator relays the provider's branch and commit. One ticket is what one agent can finish in one session. Tickets that touch the same files run one after another. Ask only what the code can't tell you; **brief** helps sharpen a thin one.
+Insert it with the "new ticket" query, with the story if you have one. Use the same absolute repo path with forward slashes across agents. Set `manager_dispatch` to your current Orca dispatch ID from the task preamble. List prerequisite ticket IDs in `depends_on` (comma-separated). Use the provider's branch and commit from the orchestrator when checking shared contracts. One ticket is what one agent can finish in one session. Tickets that touch the same files run one after another. Ask only what the code can't tell you.
+
+### Ticket transitions
+
+```text
+queued --all depends_on tickets done--> todo
+todo --> in-progress --> review
+review --FIX from reviewer, CI or PR comment--> in-progress --> review
+review --owner decision needed--> needs-you --> in-progress or review
+any --record the reason--> blocked --> in-progress
+review --PR merged--> done
+any --> canceled
+```
+
+Write the new status to the DB at each transition. Create tickets as `queued` while dependencies are unfinished, otherwise as `todo`. If a dependency is canceled, record the blocker and resolve the dependency before dispatch. For a confirmed FIX, set `in-progress` and increment `fix_rounds` in the same update before sending it to the same worker in the same worktree. Set `review` again when the fix is ready. When an owner decision pauses correction, record the FIX when dispatching it. Stop dispatching and watching canceled tickets.
 
 Use repo defaults. Apply a per-ticket harness or model override only if the owner requested it for that ticket or explicitly confirms it. For a hard or risky ticket, you may propose an override. Ask the owner (via the orchestrator if one started you) with the proposed role, harness/model and reason. Offer keeping the defaults as the default option and wait for the owner's decision before dispatching. Record approved overrides in `tickets.roles`. See the db README for how to store and resolve overrides.
 
@@ -69,19 +87,19 @@ Wait for messages. Don't poll, and don't read its screen unless it went quiet or
 
 ## 4. Review loop
 
-When the worker reports done (status `review`):
+When the worker reports done, write `review` and update `review_at`:
 1. For parallel tickets in this repo, fetch and rebase the ticket branch onto the latest base before review. Triage by diffstat and the worker's report. Send back out-of-scope changes or incomplete verification before starting review.
 2. Start the reviewer in the ticket worktree. You may review a tiny docs/config-only diff yourself. Every code diff requires a separate reviewer. Resolve its settings with `tq.py resolve-role <id> reviewer`, using `headless` if mode is unset. Name the zanuar-stack `reviewer` skill and give it a verdict file (e.g. `<scratch>/verdict-<id>.txt`). Read it even on exit zero. Retry once if the verdict is missing, then fail the run if it is still missing. Record the reviewed SHA with the verdict in `runs.result`. For cross-repo fixtures, give the reviewer the provider repo path and commit for `git hash-object` comparisons.
-3. **FIX**: check findings against the cited code, callers, tests and ticket requirements. Forward substantiated findings with evidence. If none holds up, record why and get a corrected verdict from the reviewer. Bump `fix_rounds` when you request changes and end the reviewer run. **PASS**: go to 5.
+3. **FIX**: check findings against the cited code, callers, tests and ticket requirements. End the reviewer run and forward substantiated findings with evidence using the FIX transition above. If none holds up, record why and get a corrected verdict from the reviewer. **PASS**: go to 5.
 4. After two unsuccessful FIX rounds with a low-cost worker, propose a stronger harness/model once using the approval process above. If approved, start a new session in the same worktree with the approved settings. If the owner chooses the defaults, continue with them. After about 3 FIX rounds, set `needs-you` and raise the problem with options.
 
 ## 5. Land
 
-Summarise what changed, verification and risks. Land through a PR even if older settings say `land=local`.
+Summarise what changed, verification and risks. Land hosted work through a PR. For an owner-approved local-only repo with `land=local` and no remote, report the reviewed branch, commit and verification for handoff and set `needs-you`.
 
 For parallel tickets, fetch and rebase again before merge. Re-review if the rebase changes code. Before opening, marking ready, or merging a PR, compare its head with the reviewed SHA. Send any new or changed code back to the reviewer. For a rebase with an unchanged reviewed diff, record that comparison and the new SHA. If publishing a rebased ticket branch you created, use `--force-with-lease="$push_ref:$previous_remote_sha"` with the remote SHA fetched before rebasing. If the lease fails, inspect the remote changes before proceeding. Verify the new head and wait for its PR checks.
 
-Open the PR with **open-pr** against the resolved base. Save `pr_url` and start `python3 <watch-pr dir>/pr_watch.py` in the background. Fix failures and review findings (at most 2 attempts, then escalate). Check the live PR base before landing. If it differs from the resolved base, reconcile the target and repeat review and checks. With the head reviewed, checks green, no conflict and the merge rule below satisfied, run `gh pr merge --squash`. The ticket stays `review` until merged, then `done`.
+Open the PR with **open-pr** against the resolved base. Save `pr_url` and start `python3 <watch-pr dir>/pr_watch.py` in the background. Apply the FIX transition for CI failures or substantiated PR comments that require changes (at most 2 attempts, then escalate). Check the live PR base before landing. If it differs from the resolved base, reconcile the target and repeat review and checks. With the head reviewed, checks green, no conflict and the merge rule below satisfied, run `gh pr merge --squash`. Set `done` and `done_at` only after confirming the PR merged.
 
 Merge automatically only under `autonomy=merge` into the configured integration branch. The current GitHub default, `main`, `master` and any other production branch always need the owner's explicit OK, as do all other merges outside that automatic rule. The orchestrator may relay approval. Report each merge.
 

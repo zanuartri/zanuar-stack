@@ -12,7 +12,7 @@ GitHub can't reach this machine without a public endpoint, so something has to p
 python3 "$watch_pr_dir/pr_watch.py" &   # watch_pr_dir is the directory containing this skill
 ```
 
-- It watches every ticket in the db that has a `pr_url` and isn't `done`, one machine-wide process for all repos (lock file next to `tickets.db`).
+- It watches every ticket in the db that has a `pr_url` and is neither `done` nor `canceled`, one machine-wide process for all repos (lock file next to `tickets.db`). In lite mode, use `gh pr checks <n> --watch` and inspect PR comments with `gh pr view <n> --comments`.
 - Each tick is **one** `gh api graphql` call for all PRs (about 1 point of the 5000/hour GraphQL budget). 30s while checks are pending or a PR changed in the last 10 min, backing off to 5 min when idle; it sleeps until reset if the rate limit runs low, and exits when no open PR is left.
 - On a change it sends one message to the ticket's `manager_dispatch`: subject `PR <repo>#<n>: <events>`, body the PR URL and current facts. Events: `ci_passed`, `ci_failed`, `conflicted`, `changes requested`, `new review`, `new comment`, `new commits by <someone else>`, `merged`, `closed`. Repos without CI only get the non-CI events.
 - Save the active manager dispatch on each ticket before starting the watcher. Refresh it from the new task preamble whenever a follow-up wakes the manager. Senders must also update changed dispatch IDs as described in the Orca adapter.

@@ -1,6 +1,6 @@
 ---
 name: worker
-description: Work one ticket from the team's ticket db in its own worktree and branch, verify it, and report to the manager. Use when the prompt says you are the worker for a ticket.
+description: Work one ticket or text brief in its own worktree and branch, verify it, and report to the manager. Use when the prompt says you are the worker for a ticket.
 ---
 
 # Worker
@@ -8,6 +8,8 @@ description: Work one ticket from the team's ticket db in its own worktree and b
 You own **one ticket**. A manager started you, and you answer to it.
 
 Skills named here are zanuar-stack's (`orchestrator`, `manager`, `worker`, `reviewer`, `setup-zanuar-stack` and the practice skills). If similarly named skills from another pack are installed (`rig-manager`, `rig-worker`, `rig-reviewer`, …), don't load them, and name the zanuar-stack skill in every prompt you send.
+
+In **lite mode** (the owner chose lite or the configured DB is absent), use the text brief in your prompt for goal, acceptance, verify, scope and branch. Check git and the prior messages when resuming. Skip DB reads and writes and report status and verification to the manager in chat.
 
 ## Start
 1. Read the ticket from the db ("one ticket in full"): goal, acceptance, verify, scope, branch.
@@ -32,11 +34,11 @@ Skills named here are zanuar-stack's (`orchestrator`, `manager`, `worker`, `revi
 1. Run **verify**: unit tests, typecheck and lint, plus whatever the ticket lists. Read the output. Fix failures; don't explain them away.
 2. Run **comment-sweep** on your diff and apply what it accepts.
 3. Commit everything. `git status` is clean.
-4. Set the ticket to `review` and end your `runs` row with `done`.
+4. In full mode, end your `runs` row with `done`. The manager sets the ticket to `review`.
 5. Report: `done: <what changed>; verify: <command → pass/fail>; risks: <any>`.
 6. For every Orca dispatch, including a FIX follow-up, send `worker_done` as your last action. Use the current task and dispatch IDs and actual outcome. For a headless run, leave the report in your final output and write it to the report path from the prompt.
 
-If you can't finish: set `blocked`, end your run with `blocked`, and say exactly what is in the way and what you tried. When ending a dispatch with incomplete work, send `worker_done` with `--outcome failed`.
+If you can't finish, report the blocker and what you tried so the manager can update the status. In full mode, end your run with `blocked`. When ending a dispatch with incomplete work, send `worker_done` with `--outcome failed`.
 
 ## Never
 - Never push directly to the base or integration branch. Every change to base goes through a PR. Before any authorized push, set `ticket_branch` from the ticket and `base` to its resolved base, then guard the target `push_ref` with `test -n "$ticket_branch" && test "$ticket_branch" != "$base" && test "$push_ref" = "refs/heads/$ticket_branch" || exit 1`. Push only `HEAD:$push_ref` using **open-pr** credentials.
