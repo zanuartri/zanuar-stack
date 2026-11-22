@@ -26,6 +26,8 @@ The orchestrator interviews you, writes one brief per repo and starts a manager 
 
 ## How it works
 
+Full lane:
+
 ```
                  owner
                    │  decisions only
@@ -43,6 +45,7 @@ The orchestrator interviews you, writes one brief per repo and starts a manager 
 
 Shared state is one SQLite file, `~/.orca/tickets/tickets.db` (see [`db/`](db/README.md)): stories, tickets, runs, per-repo role config.
 
+- **Lanes:** Direct for quick work without a ticket, light for one ticket with a worker and reviewer, full for larger work with managers. Every code change gets a separate reviewer.
 - **Ticket statuses:** `queued` (waiting on dependencies) → `todo` → `in-progress` → `review` → `done`. Also `needs-you` (owner decision), `blocked` and `canceled`.
 - **FIX loop:** a reviewer, CI failure or PR comment that needs a change sends the ticket back to the same worker and worktree (`review` → `in-progress` → `review`). After a few rounds it escalates instead of looping.
 - **Autonomy** (per repo, per-ticket override): `ask` stops after each ticket, `review` (default) opens the PR and asks before merging, `merge` merges into a non-production integration branch once review and checks pass.
@@ -58,31 +61,21 @@ For a [new project or repo](skills/orchestrator/SKILL.md#new-project-or-repo), i
 
 | role skills | |
 |---|---|
-| [`orchestrator`](skills/orchestrator/SKILL.md) | cross-repo planning, briefs, escalation; never codes |
+| [`orchestrator`](skills/orchestrator/SKILL.md) | choose a lane, handle quick work or coordinate delivery |
 | [`manager`](skills/manager/SKILL.md) | tickets, dispatch, triage, review loop, PR |
 | [`worker`](skills/worker/SKILL.md) | one ticket, verify, report |
-| [`reviewer`](skills/reviewer/SKILL.md) | full-diff review, PASS or FIX |
+| [`reviewer`](skills/reviewer/SKILL.md) | review the full diff and its effects, PASS or FIX |
 
 | practice skills | |
 |---|---|
 | [`interview`](skills/interview/SKILL.md) | one-question-at-a-time requirements interview |
-| [`big-plan`](skills/big-plan/SKILL.md) | design the workflow for large or unattended work |
-| [`brief`](skills/brief/SKILL.md) | make a task deeper, then rewrite it |
-| [`shape-first`](skills/shape-first/SKILL.md) | sketch types and boundaries before code |
-| [`cut-first`](skills/cut-first/SKILL.md) | subtract before you add |
-| [`root-cause`](skills/root-cause/SKILL.md) | fix where it first went wrong |
-| [`test-first`](skills/test-first/SKILL.md) | failing regression test, then fix |
-| [`ripple-check`](skills/ripple-check/SKILL.md) | what breaks outside the diff, proven |
-| [`comment-sweep`](skills/comment-sweep/SKILL.md) | delete comments that don't earn their place, encode real constraints |
 | [`make-verify`](skills/make-verify/SKILL.md) | repo-local recipe to launch the app and prove a feature (optional) |
 | [`design-handoff`](skills/design-handoff/SKILL.md) | shared format for design requests and implementation briefs |
-| [`decision-log`](skills/decision-log/SKILL.md) | auditable trail in the db or a TSV |
 | [`retro`](skills/retro/SKILL.md) | find recurring delivery problems and propose fixes backed by past incidents |
 | [`setup-zanuar-stack`](skills/setup-zanuar-stack/SKILL.md) | run once: ticket db + who plays each role |
-| [`adopt`](skills/adopt/SKILL.md) | take over a PR or branch, keep credit |
-| [`open-pr`](skills/open-pr/SKILL.md) | short, readable PRs |
-| [`watch-pr`](skills/watch-pr/SKILL.md) | own a PR through CI and review |
-| [`pr-comments`](skills/pr-comments/SKILL.md) | attributed, direct PR comments |
+| [`watch-pr`](skills/watch-pr/SKILL.md) | follow CI and review, write attributed PR comments |
+
+Want standalone practice skills (TDD, root cause, planning)? Install Poteto's pstack or Matt Pocock's skills alongside.
 
 Harness wiring: [`adapters/orca`](adapters/orca/README.md).
 
@@ -167,21 +160,13 @@ Adapted, in our own words, from:
 |---|---|---|
 | orchestrator, manager, worker, reviewer | the role split | [herdr-rig](https://github.com/zanuartri/herdr-rig) |
 | `interview` | "grill me" | Matt Pocock |
-| `big-plan` | `figure-it-out` | Poteto's pstack |
-| `brief` | `sharpen` | Poteto's pstack |
-| `shape-first` | `architect` | Poteto's pstack |
-| `decision-log` | `show-me-your-work` | Poteto's pstack |
-| `test-first` | `tdd` | Poteto's pstack |
-| `root-cause` | `principle-fix-root-causes` | Poteto's pstack |
-| `cut-first` | `principle-subtract-before-you-add` | Poteto's pstack |
-| `ripple-check` | `blast-radius` | Poteto's pstack |
-| `comment-sweep` | `no-comments` | Poteto's pstack |
+| `orchestrator`, `manager` | `figure-it-out`, `sharpen`, `architect`, `show-me-your-work` | Poteto's pstack |
+| `worker` | `tdd`, `principle-fix-root-causes`, `principle-subtract-before-you-add`, `no-comments` | Poteto's pstack |
+| `reviewer` | `blast-radius` | Poteto's pstack |
 | `make-verify` | `create-verification-skill`, `maintain-verification-skill` | Poteto's pstack |
 | `retro` | [`retro`](https://github.com/mattpocock/skills/tree/main/skills/engineering/retro), [`reflect`](https://github.com/cursor/plugins/tree/main/pstack/skills/reflect), [`correct`](https://github.com/cursor/plugins/tree/main/pstack/skills/correct) | Matt Pocock and Poteto's pstack |
-| `adopt` | `takeover` | [t3dotgg/tstack](https://github.com/t3dotgg/tstack) |
-| `open-pr` | `file-pr` | t3dotgg/tstack |
-| `watch-pr` | `babysit-pr` | t3dotgg/tstack |
-| `pr-comments` | `leaving-pr-comments` | t3dotgg/tstack |
+| `orchestrator`, `manager` | `takeover`, `file-pr` | [t3dotgg/tstack](https://github.com/t3dotgg/tstack) |
+| `watch-pr` | `babysit-pr`, `leaving-pr-comments` | t3dotgg/tstack |
 
 Poteto's pstack: [cursor/plugins/pstack](https://github.com/cursor/plugins/tree/main/pstack), mirror [backnotprop/pstack](https://github.com/backnotprop/pstack).
 

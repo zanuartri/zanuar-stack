@@ -2,6 +2,19 @@
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow [Semantic Versioning](https://semver.org/).
 
+## [0.9.0]
+
+### Added
+- Choose direct, light or full orchestration and keep the existing work when moving from light to full.
+
+### Changed
+- Use `interview` or “ask me first” to request an interview by name.
+
+### Removed
+- `craft`, `root-cause`, `cut-first`, `test-first` and `comment-sweep`. Their rules live in `worker`.
+- `plan`, `big-plan`, `shape-first`, `brief`, `decision-log`, `open-pr` and `adopt`. Their procedures live in `orchestrator` and `manager`.
+- `ripple-check` and `pr-comments`. Their rules live in `reviewer` and `watch-pr`, respectively.
+
 ## [0.7.0]
 
 ### Added

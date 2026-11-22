@@ -28,11 +28,12 @@ In **lite mode** (the owner chose lite or the configured DB is absent), use the 
 - Stuck on a choice? Ask with options and a default ("A or B? going with A unless told otherwise") and keep doing whatever doesn't depend on it.
 - A message from the manager overrides your plan.
 - One-line milestones only when they matter. No chatter.
-- Bugs: **root-cause**, and **test-first** when a cheap test exists.
+- For bugs, reproduce the failure and fix the first point where behavior went wrong. When an existing test gives you a cheap target, make it fail for the expected reason before fixing the bug, then rerun it.
+- Remove dead or redundant code within scope before adding more.
 
 ## Finish
 1. Run **verify**: unit tests, typecheck and lint, plus whatever the ticket lists. Read the output. Fix failures; don't explain them away.
-2. Run **comment-sweep** on your diff and apply what it accepts.
+2. Sweep your diff for comments before reporting. Remove narration, stale notes and commented-out code. Fix in-scope workarounds and keep comments that explain real constraints.
 3. Commit everything. `git status` is clean.
 4. In full mode, end your `runs` row with `done`. The manager sets the ticket to `review`.
 5. Report: `done: <what changed>; verify: <command → pass/fail>; risks: <any>`.
@@ -41,6 +42,6 @@ In **lite mode** (the owner chose lite or the configured DB is absent), use the 
 If you can't finish, report the blocker and what you tried so the manager can update the status. In full mode, end your run with `blocked`. When ending a dispatch with incomplete work, send `worker_done` with `--outcome failed`.
 
 ## Never
-- Never push directly to the base or integration branch. Every change to base goes through a PR. Before any authorized push, set `ticket_branch` from the ticket and `base` to its resolved base, then guard the target `push_ref` with `test -n "$ticket_branch" && test "$ticket_branch" != "$base" && test "$push_ref" = "refs/heads/$ticket_branch" || exit 1`. Push only `HEAD:$push_ref` using **open-pr** credentials.
+- For authorized pushes, follow the branch guard and non-interactive credentials in the [manager's rules](../manager/SKILL.md#rules).
 - Never push without authorization, merge into base locally, or rewrite history outside your branch.
 - Skip, weaken or fake a check to get to green.
