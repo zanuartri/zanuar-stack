@@ -11,6 +11,10 @@ The shared SQLite database defaults to `~/.orca/tickets/tickets.db`. Use `ZANUAR
 | `repo_settings` | Autonomy, landing policy and integration branch |
 | `decisions` | Evidence for decisions made during a ticket |
 | `pr_watch` | Last seen PR state, owned by the watcher |
+| `products` | PDLC products: repo, base branch, deploy targets and skills, merge rule |
+| `features` | PDLC features: stage, flags, PRD and acceptance |
+| `tasks` | PDLC tasks per feature: kind, assignee, status, brief and result |
+| `events` | PDLC append-only event log per feature |
 
 ## Initialize and query
 

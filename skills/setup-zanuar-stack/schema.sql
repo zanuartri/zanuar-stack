@@ -82,3 +82,61 @@ CREATE TABLE IF NOT EXISTS pr_watch (        -- last seen state per PR, owned by
 
 CREATE INDEX IF NOT EXISTS tickets_repo_status ON tickets(repo, status);
 CREATE INDEX IF NOT EXISTS runs_ticket ON runs(ticket);
+
+CREATE TABLE IF NOT EXISTS products (
+  id                   TEXT PRIMARY KEY,   -- e.g. torchlight
+  repo                 TEXT,
+  base_branch          TEXT,
+  staging_target       TEXT,
+  prod_target          TEXT,
+  deploy_staging_skill TEXT,
+  smoke_skill          TEXT,
+  deploy_prod_skill    TEXT,
+  merge_rule           TEXT,
+  created_at           TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS features (
+  id         TEXT PRIMARY KEY,             -- e.g. F-3
+  title      TEXT NOT NULL,
+  product    TEXT REFERENCES products(id),
+  stage      TEXT NOT NULL DEFAULT 'spec'
+             CHECK (stage IN ('spec','design','dev','deploy-staging','test','deploy-prod','live')),
+  flag_ui    INTEGER NOT NULL DEFAULT 0,
+  flag_arch  INTEGER NOT NULL DEFAULT 0,
+  flag_ai    INTEGER NOT NULL DEFAULT 0,
+  prd        TEXT,
+  acceptance TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT,
+  closed_at  TEXT
+);
+
+CREATE TABLE IF NOT EXISTS tasks (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  feature_id TEXT REFERENCES features(id),
+  kind       TEXT NOT NULL
+             CHECK (kind IN ('design','review-arch','review-ai','deploy-staging','test','deploy-prod')),
+  assignee   TEXT,
+  status     TEXT NOT NULL DEFAULT 'todo'
+             CHECK (status IN ('todo','doing','needs-you','done','failed')),
+  brief      TEXT,
+  result     TEXT,
+  links      TEXT,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  started_at TEXT,
+  done_at    TEXT
+);
+
+-- append-only: never UPDATE or DELETE rows
+CREATE TABLE IF NOT EXISTS events (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  feature_id TEXT REFERENCES features(id),
+  actor      TEXT,
+  kind       TEXT,
+  note       TEXT,
+  at         TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_events_feature ON events(feature_id);
+CREATE INDEX IF NOT EXISTS idx_tasks_feature_status ON tasks(feature_id, status);

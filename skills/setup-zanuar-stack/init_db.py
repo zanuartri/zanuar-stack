@@ -23,6 +23,7 @@ TICKET_COLUMNS = {
     "roles": "TEXT",
     "base": "TEXT",
 }
+STORY_COLUMNS = {"feature_id": "TEXT REFERENCES features(id)"}
 
 
 def migrate_ticket_statuses(c):
@@ -64,6 +65,10 @@ def connect():
         for col, decl in TICKET_COLUMNS.items():
             if col not in have:
                 c.execute(f"ALTER TABLE tickets ADD COLUMN {col} {decl}")
+        have = {r[1] for r in c.execute("PRAGMA table_info(stories)")}
+        for col, decl in STORY_COLUMNS.items():
+            if col not in have:
+                c.execute(f"ALTER TABLE stories ADD COLUMN {col} {decl}")
         migrate_ticket_statuses(c)
         if "base" not in {r[1] for r in c.execute("PRAGMA table_info(repo_settings)")}:
             c.execute("ALTER TABLE repo_settings ADD COLUMN base TEXT")
